@@ -20,80 +20,97 @@ export const SendMessage = async (
 ): Promise<any> => {
   try {
     const wbot = await GetWhatsappWbot(whatsapp);
+    
+    if (!wbot) {
+      throw new Error("WhatsApp bot is not initialized");
+    }
+    
     const jid = `${messageData.number}@s.whatsapp.net`;
     let message: any;
     const body = `\u200e${messageData.body}`;
-    console.log("envio de mensagem");
+    
+    console.log("Enviando mensaje a:", jid);
+
     if (messageData.mediaPath) {
+      // Verificar si el archivo existe
+      if (!fs.existsSync(messageData.mediaPath)) {
+        throw new Error(`Media file not found: ${messageData.mediaPath}`);
+      }
+
+      const mimetype = mime.lookup(messageData.mediaPath) || "application/octet-stream";
       const media = {
         path: messageData.mediaPath,
-        mimetype: mime.lookup(messageData.mediaPath)
-      } as Express.Multer.File;
+        mimetype,
+        originalname: messageData.mediaPath.split("/").pop() || "file"
+      };
 
-      console.log(media);
+      console.log("Media detected:", media);
       const pathMedia = messageData.mediaPath;
       const typeMessage = media.mimetype.split("/")[0];
       let options: AnyMessageContent;
 
-      if (typeMessage === "video") {
-        options = {
-          video: fs.readFileSync(pathMedia),
-          caption: body,
-          fileName: media.originalname
-          // gifPlayback: true
-        };
-      } else if (typeMessage === "audio") {
-        const typeAudio = media.originalname.includes("audio-record-site");
-        if (typeAudio) {
-          const convert = await processAudio(media.path);
+      switch (typeMessage) {
+        case "video":
           options = {
-            audio: fs.readFileSync(convert),
+            video: fs.readFileSync(pathMedia),
+            caption: body,
+            fileName: media.originalname
+          };
+          break;
+        
+        case "audio":
+          const typeAudio = media.originalname.includes("audio-record-site");
+          let audioPath: string;
+          
+          if (typeAudio) {
+            audioPath = await processAudio(media.path);
+          } else {
+            audioPath = await processAudioFile(media.path);
+          }
+          
+          options = {
+            audio: fs.readFileSync(audioPath),
             mimetype: typeAudio ? "audio/mp4" : media.mimetype,
-            ptt: true
+            ptt: typeAudio // push-to-talk solo para grabaciones
           };
-        } else {
-          const convert = await processAudioFile(media.path);
+          break;
+        
+        case "document":
+        case "application":
           options = {
-            audio: fs.readFileSync(convert),
-            mimetype: typeAudio ? "audio/mp4" : media.mimetype
+            document: fs.readFileSync(pathMedia),
+            caption: body,
+            fileName: media.originalname,
+            mimetype: media.mimetype
           };
-        }
-      } else if (typeMessage === "document") {
-        options = {
-          document: fs.readFileSync(pathMedia),
-          caption: body,
-          fileName: media.originalname,
-          mimetype: media.mimetype
-        };
-      } else if (typeMessage === "application") {
-        options = {
-          document: fs.readFileSync(pathMedia),
-          caption: body,
-          fileName: media.originalname,
-          mimetype: media.mimetype
-        };
-      } else {
-        options = {
-          image: fs.readFileSync(pathMedia),
-          caption: body
-        };
+          break;
+        
+        default:
+          // Para imágenes y otros tipos
+          options = {
+            image: fs.readFileSync(pathMedia),
+            caption: body
+          };
       }
 
-      message = await wbot.sendMessage(jid, {
-        ...options
-      });
+      message = await wbot.sendMessage(jid, options);
+      console.log("Media message sent:", message.key.id);
 
-      console.log(message);
     } else {
-      console.log(body);
-      message = await wbot.sendMessage(jid, {
-        text: body
-      });
+      // Mensaje de texto simple
+      console.log("Text message body:", body);
+      message = await wbot.sendMessage(jid, { text: body });
     }
 
     return message;
+    
   } catch (err: any) {
-    console.log(err);
-    throw new Error(err);
+    console.error("Error in SendMessage:", err);
+    // Mejor manejo del error
+    if (err instanceof Error) {
+      throw new Error(`Failed to send message: ${err.message}`);
+    } else {
+      throw new Error("Failed to send message: Unknown error");
+    }
   }
 };

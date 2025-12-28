@@ -9,13 +9,17 @@ import * as Sentry from "@sentry/node";
 import Whatsapp from "../models/Whatsapp";
 
 const KEY_MAP: { [T in keyof SignalDataTypeMap]: string } = {
-  "pre-key": "preKeys",
-  session: "sessions",
-  "sender-key": "senderKeys",
-  "app-state-sync-key": "appStateSyncKeys",
-  "app-state-sync-version": "appStateVersions",
-  "sender-key-memory": "senderKeyMemory"
+  'pre-key': 'preKeys',
+  session: 'sessions',
+  'sender-key': 'senderKeys',
+  'sender-key-memory': 'senderKeyMemory',
+  'app-state-sync-key': 'appStateSyncKeys',
+  'app-state-sync-version': 'appStateVersions',
+  'lid-mapping': 'lidMappings',        // Línea añadida
+  'device-list': 'deviceLists',        // Línea añadida
+  tctoken: 'tctokens'                  // Línea añadida
 };
+
 
 const authState = async (
   whatsapp: Whatsapp

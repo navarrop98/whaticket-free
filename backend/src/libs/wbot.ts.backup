@@ -86,7 +86,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
       
       // Importación dinámica para evitar problemas de carga circular
       // const makeInMemoryStore = require("./libs/makeInMemoryStore");
-      const makeInMemoryStore = require("./makeInMemoryStore").default;
+      import { makeInMemoryStore } from "@whiskeysockets/baileys";
       const store = makeInMemoryStore({
         logger: loggerBaileys
       });

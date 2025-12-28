@@ -1,0 +1,57 @@
+=== DIAGNÓSTICO WHATICKET ===
+Fecha: $(date)
+
+1. PM2 STATUS:
+┌────┬───────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                  │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼───────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 2  │ whaticket-backend     │ default     │ 1.0.0   │ fork    │ 28460    │ 46m    │ 0    │ online    │ 0%       │ 151.5mb  │ whatick… │ disabled │
+│ 1  │ whaticket-frontend    │ default     │ 0.1.0   │ fork    │ 24511    │ 7h     │ 0    │ online    │ 0%       │ 71.8mb   │ whatick… │ disabled │
+└────┴───────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+
+2. BACKEND LOGS (20 líneas):
+[TAILING] Tailing last 20 lines for [whaticket-backend] process (change the value with --lines option)
+/home/whaticketapp/.pm2/logs/whaticket-backend-error.log last 20 lines:
+2|whaticke |     at Module.<anonymous> (node:internal/modules/cjs/loader:1463:12)
+2|whaticke |     at Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:101:39)
+2|whaticke |     at require (node:internal/modules/helpers:147:16)
+2|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js:12:16)
+2|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1706:14)
+2|whaticke |     at Object..js (node:internal/modules/cjs/loader:1839:10)
+2|whaticke |     at Module.load (node:internal/modules/cjs/loader:1441:32)
+2|whaticke |     at Function._load (node:internal/modules/cjs/loader:1263:12)
+2|whaticke |     at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+2|whaticke |     at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+2|whaticke |     at Module.<anonymous> (node:internal/modules/cjs/loader:1463:12)
+2|whaticke |     at Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:101:39)
+2|whaticke |     at require (node:internal/modules/helpers:147:16)
+2|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js:18:43)
+2|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1706:14)
+2|whaticke | ReferenceError: state is not defined
+2|whaticke |     at /home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js:110:27
+2|whaticke |     at Generator.next (<anonymous>)
+2|whaticke |     at fulfilled (/home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js:28:58)
+2|whaticke |     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+/home/whaticketapp/.pm2/logs/whaticket-backend-out.log last 20 lines:
+2|whaticke |       privKey: <Buffer 20 4c b5 74 79 48 54 c8 3e 39 f7 9a 12 1a 6b a0 61 6d 9f 58 e3 3b 59 b7 d1 cd 54 c3 10 95 e6 49>
+2|whaticke |     },
+2|whaticke |     lastRemoteEphemeralKey: <Buffer 05 7f 81 66 89 20 cb 49 a8 eb 67 01 9e d6 77 5f d8 09 f7 09 31 6d a1 b9 f4 af 2b 1e 8a 4d 14 17 22>,
+2|whaticke |     previousCounter: 0,
+2|whaticke |     rootKey: <Buffer 50 d3 18 1d 32 f2 bb 2e a6 c8 29 13 86 41 e2 d5 c5 1b 58 e7 c0 98 49 17 00 a1 b8 4f 39 77 f9 ac>
+2|whaticke |   },
+2|whaticke |   indexInfo: {
+2|whaticke |     baseKey: <Buffer 05 d9 60 e0 09 59 3c ae ad c2 1b a6 be 64 16 59 42 14 96 1b a3 ed 41 67 27 60 a7 78 7f 5c 56 52 23>,
+2|whaticke |     baseKeyType: 1,
+2|whaticke |     closed: -1,
+2|whaticke |     used: 1766880303589,
+2|whaticke |     created: 1766880303589,
+2|whaticke |     remoteIdentityKey: <Buffer 05 e3 23 d6 cd 40 20 22 10 59 9a fa 83 a9 eb f4 2f 78 8f 6d 13 7c 50 6e cf 50 3a c3 90 66 5d 61 01>
+2|whaticke |   },
+2|whaticke |   pendingPreKey: {
+2|whaticke |     signedKeyId: 16709982,
+2|whaticke |     baseKey: <Buffer 05 d9 60 e0 09 59 3c ae ad c2 1b a6 be 64 16 59 42 14 96 1b a3 ed 41 67 27 60 a7 78 7f 5c 56 52 23>,
+2|whaticke |     preKeyId: 3038053
+2|whaticke |   }
+2|whaticke | }
+

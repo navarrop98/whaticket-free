@@ -1,0 +1,79 @@
+// Implementación TypeScript para makeInMemoryStore
+export default function makeInMemoryStore(options?: any) {
+  const logger = options?.logger || {
+    debug: () => {},
+    trace: () => {},
+    info: () => {}
+  };
+  
+  const messages = new Map<string, any>();
+  const contacts = new Map<string, any>();
+  const chats = new Map<string, any>();
+  
+  const store = {
+    bind(ev: any) {
+      if (ev && typeof ev.on === 'function') {
+        ev.on('messages.upsert', ({ messages: newMessages }: any) => {
+          if (newMessages && Array.isArray(newMessages)) {
+            newMessages.forEach((msg: any) => {
+              if (msg.key && msg.key.remoteJid && msg.key.id) {
+                const key = `${msg.key.remoteJid}:${msg.key.id}`;
+                messages.set(key, msg);
+              }
+            });
+          }
+        });
+      }
+      logger.debug('store bound');
+      return store;
+    },
+    
+    async loadMessage(remoteJid: string, id: string) {
+      const key = `${remoteJid}:${id}`;
+      const msg = messages.get(key);
+      return msg ? msg.message || msg : undefined;
+    },
+    
+    write(message: any) {
+      if (message && message.key && message.key.remoteJid && message.key.id) {
+        const key = `${message.key.remoteJid}:${message.key.id}`;
+        messages.set(key, message);
+      }
+    },
+    
+    readMessages(remoteJid: string) {
+      const result: any[] = [];
+      for (const [key, message] of messages.entries()) {
+        if (key.startsWith(remoteJid + ':')) {
+          result.push(message);
+        }
+      }
+      return result;
+    },
+    
+    getMessage(key: any) {
+      if (key && key.remoteJid && key.id) {
+        const mapKey = `${key.remoteJid}:${key.id}`;
+        const msg = messages.get(mapKey);
+        return msg ? msg.message || msg : undefined;
+      }
+      return undefined;
+    },
+    
+    clear() {
+      messages.clear();
+      contacts.clear();
+      chats.clear();
+    },
+    
+    toJSON() {
+      return {
+        messages: Array.from(messages.entries()).reduce((obj, [key, val]) => { obj[key] = val; return obj; }, {}),
+        contacts: Array.from(contacts.entries()).reduce((obj, [key, val]) => { obj[key] = val; return obj; }, {}),
+        chats: Array.from(chats.entries()).reduce((obj, [key, val]) => { obj[key] = val; return obj; }, {})
+      };
+    }
+  };
+  
+  return store;
+}
