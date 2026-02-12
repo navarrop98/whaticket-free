@@ -4,7 +4,7 @@ function connectToSocket() {
   const token = localStorage.getItem("token");
   const socket = openSocket(getBackendUrl(), {
     query: {
-      token: JSON.parse(token),
+      token: token,
     },
   });
 

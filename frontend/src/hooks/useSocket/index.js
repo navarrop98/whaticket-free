@@ -5,11 +5,11 @@ import { getBackendUrl } from "../../config";
 const useProvideSocket = () => {
   const socket = useMemo(() => {
     const token = localStorage.getItem("token");
-    const socket = openSocket(getBackendUrl() + "1", {
+    const socket = openSocket(getBackendUrl(), {
       query: {
-        token: JSON.parse(token),
+        token: token,
       },
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
     });
     return socket;
   }, []);
