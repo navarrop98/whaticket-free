@@ -12,7 +12,6 @@ import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
 
 import sendFaceMedia from "../services/FacebookServices/sendFacebookMessageMedia";
 import sendFaceMessage from "../services/FacebookServices/sendFacebookMessage";
-import WebhookSender from "../utils/webhookSender"; // NUEVA IMPORTACIÓN
 
 type IndexQuery = {
   pageNumber: string;
@@ -69,23 +68,6 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       console.log("facebook");
       await sendFaceMessage({ body, ticket, quotedMsg });
     }
-  }
-
-  // ENVIAR WEBHOOK A N8N DESPUÉS DE ENVIAR MENSAJE
-  try {
-    // Obtener el último mensaje para enviar en el webhook
-    const messages = await Message.findAll({
-      where: { ticketId: ticket.id },
-      order: [['createdAt', 'DESC']],
-      limit: 1
-    });
-
-    if (messages.length > 0) {
-      await WebhookSender.sendNewMessageWebhook(messages[0], ticket);
-    }
-  } catch (error) {
-    console.error('Error enviando webhook para nuevo mensaje:', error);
-    // No fallar el proceso principal si el webhook falla
   }
 
   return res.send();

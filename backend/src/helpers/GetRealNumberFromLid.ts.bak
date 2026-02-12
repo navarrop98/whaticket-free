@@ -1,0 +1,221 @@
+import BaileysSessions from "../models/BaileysSessions";
+import { Op } from 'sequelize';
+
+interface MappingResult {
+  realNumber: string;
+  isLid: boolean;
+  original: string;
+  lidNumber?: string;
+}
+
+// Función helper para extraer valor del JSON
+function extractValueFromJson(jsonValue: any): string | null {
+  try {
+    if (!jsonValue) return null;
+    
+    if (typeof jsonValue === 'string') {
+      // Si es string con comillas, removerlas
+      return jsonValue.replace(/"/g, '');
+    }
+    
+    if (typeof jsonValue === 'object') {
+      // Si es objeto, tomar el primer valor string
+      for (const value of Object.values(jsonValue)) {
+        if (typeof value === 'string') {
+          return value.replace(/"/g, '');
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`[extractValueFromJson] Error:`, error);
+    return null;
+  }
+}
+
+const GetRealNumberFromLid = async (
+  sessionId: string, 
+  lidOrNumber: string
+): Promise<MappingResult> => {
+  try {
+    console.log(`[LID Helper] Buscando número real para: ${lidOrNumber}, sessionId: ${sessionId}`);
+    
+    // Limpiar input
+    let cleanInput = lidOrNumber;
+    if (lidOrNumber.includes('@')) {
+      cleanInput = lidOrNumber.split('@')[0];
+    }
+    
+    // Si es número normal (hasta 15 dígitos)
+    if (cleanInput.length <= 15 && /^\d+$/.test(cleanInput)) {
+      return {
+        realNumber: cleanInput,
+        isLid: false,
+        original: lidOrNumber
+      };
+    }
+    
+    // Convertir sessionId a número (whatsappId es integer)
+    const whatsappId = parseInt(sessionId) || 1;
+    
+    console.log(`[LID Helper] Buscando en BaileysSessions whatsappId=${whatsappId}`);
+    
+    // 🎯 ESTRATEGIA 1: Buscar exactamente por name
+    const reverseKey = `lid-mapping-${cleanInput}_reverse`;
+    console.log(`[LID Helper] Buscando key exacta: ${reverseKey}`);
+    
+    const reverseSession = await BaileysSessions.findOne({
+      where: {
+        whatsappId,
+        name: reverseKey
+      }
+    });
+    
+    if (reverseSession && reverseSession.value) {
+      const realNumber = extractValueFromJson(reverseSession.value);
+      if (realNumber) {
+        console.log(`[LID Helper] ✅ Mapping exacto encontrado: ${cleanInput} -> ${realNumber}`);
+        return {
+          realNumber,
+          isLid: true,
+          original: lidOrNumber,
+          lidNumber: cleanInput
+        };
+      }
+    }
+    
+    // 🎯 ESTRATEGIA 2: Buscar todos los mappings reverse y encontrar coincidencias parciales
+    console.log(`[LID Helper] Búsqueda exacta falló, buscando coincidencias parciales...`);
+    
+    const allMappings = await BaileysSessions.findAll({
+      where: {
+        whatsappId,
+        name: {
+          [Op.like]: 'lid-mapping-%_reverse'
+        }
+      }
+    });
+    
+    console.log(`[LID Helper] Encontrados ${allMappings.length} mappings reverse`);
+    
+    for (const mapping of allMappings) {
+      if (!mapping.name) continue;
+      
+      // Extraer el LID del nombre (ej: lid-mapping-129888535236789_reverse)
+      const lidFromKey = mapping.name.replace('lid-mapping-', '').replace('_reverse', '');
+      
+      // 🚨 CLAVE: Verificar coincidencia parcial
+      // Caso 1: Nuestro input (1298885352) está contenido en el LID real (129888535236789)
+      // Caso 2: El LID real está contenido en nuestro input
+      // Caso 3: Coinciden los primeros dígitos (común con LIDs truncados)
+      if (lidFromKey.includes(cleanInput) || cleanInput.includes(lidFromKey)) {
+        const realNumber = extractValueFromJson(mapping.value);
+        if (realNumber) {
+          console.log(`[LID Helper] ✅ Coincidencia parcial encontrada:`);
+          console.log(`   Input: ${cleanInput}`);
+          console.log(`   LID en BD: ${lidFromKey}`);
+          console.log(`   Número real: ${realNumber}`);
+          return {
+            realNumber,
+            isLid: true,
+            original: lidOrNumber,
+            lidNumber: lidFromKey
+          };
+        }
+      }
+      
+      // También verificar si los primeros dígitos coinciden (para LIDs truncados)
+      const minLength = Math.min(lidFromKey.length, cleanInput.length);
+      const firstDigitsMatch = lidFromKey.substring(0, minLength) === cleanInput.substring(0, minLength);
+      
+      if (firstDigitsMatch && minLength >= 8) { // Al menos 8 dígitos coinciden
+        const realNumber = extractValueFromJson(mapping.value);
+        if (realNumber) {
+          console.log(`[LID Helper] ✅ Coincidencia por primeros dígitos:`);
+          console.log(`   Input: ${cleanInput} (${cleanInput.length} dígitos)`);
+          console.log(`   LID en BD: ${lidFromKey} (${lidFromKey.length} dígitos)`);
+          console.log(`   Coinciden primeros ${minLength} dígitos`);
+          console.log(`   Número real: ${realNumber}`);
+          return {
+            realNumber,
+            isLid: true,
+            original: lidOrNumber,
+            lidNumber: lidFromKey
+          };
+        }
+      }
+    }
+    
+    // 🎯 ESTRATEGIA 3: Buscar por el número real (por si el input ya es número)
+    const directKey = `lid-mapping-${cleanInput}`;
+    const directSession = await BaileysSessions.findOne({
+      where: {
+        whatsappId,
+        name: directKey
+      }
+    });
+    
+    if (directSession && directSession.value) {
+      console.log(`[LID Helper] ℹ️ Input es número real, tiene LID asociado`);
+      const lidNumber = extractValueFromJson(directSession.value);
+      return {
+        realNumber: cleanInput,
+        isLid: false,
+        original: lidOrNumber,
+        lidNumber
+      };
+    }
+    
+    // 🎯 ESTRATEGIA 4: Buscar en mappings directos (sin _reverse)
+    const allDirectMappings = await BaileysSessions.findAll({
+      where: {
+        whatsappId,
+        name: {
+          [Op.like]: 'lid-mapping-%',
+          [Op.notLike]: '%_reverse'
+        }
+      }
+    });
+    
+    for (const mapping of allDirectMappings) {
+      if (!mapping.name) continue;
+      
+      // Extraer el número del nombre (ej: lid-mapping-5492478461419)
+      const numberFromKey = mapping.name.replace('lid-mapping-', '');
+      
+      if (numberFromKey === cleanInput || cleanInput.includes(numberFromKey) || numberFromKey.includes(cleanInput)) {
+        const lidNumber = extractValueFromJson(mapping.value);
+        if (lidNumber) {
+          console.log(`[LID Helper] ✅ Encontrado a través de número real:`);
+          console.log(`   Número: ${numberFromKey}`);
+          console.log(`   LID asociado: ${lidNumber}`);
+          return {
+            realNumber: cleanInput,
+            isLid: false,
+            original: lidOrNumber,
+            lidNumber
+          };
+        }
+      }
+    }
+    
+    // No se encontró mapping
+    console.log(`[LID Helper] ⚠️ No se encontró mapping para: ${cleanInput}`);
+    return {
+      realNumber: cleanInput,
+      isLid: cleanInput.length > 12,
+      original: lidOrNumber
+    };
+    
+  } catch (error) {
+    console.error(`[LID Helper] ❌ Error:`, error);
+    return {
+      realNumber: lidOrNumber,
+      isLid: false,
+      original: lidOrNumber
+    };
+  }
+};
+
+export default GetRealNumberFromLid;

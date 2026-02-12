@@ -8,7 +8,6 @@ import ShowTicketService from "../services/TicketServices/ShowTicketService";
 import UpdateTicketService from "../services/TicketServices/UpdateTicketService";
 import SendWhatsAppMessage from "../services/WbotServices/SendWhatsAppMessage";
 import ShowWhatsAppService from "../services/WhatsappService/ShowWhatsAppService";
-import WebhookSender from "../utils/webhookSender"; // NUEVA IMPORTACIÓN
 
 import Ticket from "../models/Ticket";
 
@@ -92,14 +91,6 @@ export const store = async (req: Request, res: Response): Promise<Response> => {
       ticket
     });
 
-  // ENVIAR WEBHOOK A N8N PARA NUEVO TICKET
-  try {
-    await WebhookSender.sendTicketUpdateWebhook(ticket);
-  } catch (error) {
-    console.error('Error enviando webhook para nuevo ticket:', error);
-    // No fallar el proceso principal si el webhook falla
-  }
-
   return res.status(200).json(ticket);
 };
 
@@ -120,10 +111,6 @@ export const update = async (
   const { ticketId } = req.params;
   const ticketData: TicketData = req.body;
 
-  // Obtener el ticket actual para comparar estados
-  const oldTicket = await Ticket.findByPk(ticketId);
-  const oldStatus = oldTicket ? oldTicket.status : undefined;
-
   const { ticket } = await UpdateTicketService({
     ticketData,
     ticketId
@@ -140,17 +127,6 @@ export const update = async (
         ticket
       });
     }
-  }
-
-  // ENVIAR WEBHOOK A N8N PARA ACTUALIZACIÓN DE TICKET
-  try {
-    // Solo enviar webhook si el estado cambió
-    if (oldStatus && oldStatus !== ticket.status) {
-      await WebhookSender.sendTicketUpdateWebhook(ticket, oldStatus);
-    }
-  } catch (error) {
-    console.error('Error enviando webhook para actualización de ticket:', error);
-    // No fallar el proceso principal si el webhook falla
   }
 
   return res.status(200).json(ticket);
@@ -175,14 +151,6 @@ export const remove = async (
       action: "delete",
       ticketId: +ticketId
     });
-
-  // ENVIAR WEBHOOK A N8N PARA ELIMINACIÓN DE TICKET
-  try {
-    await WebhookSender.sendTicketUpdateWebhook(ticket);
-  } catch (error) {
-    console.error('Error enviando webhook para eliminación de ticket:', error);
-    // No fallar el proceso principal si el webhook falla
-  }
 
   return res.status(200).json({ message: "ticket deleted" });
 };

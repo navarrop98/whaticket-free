@@ -2,7 +2,7 @@ import AppError from "../../errors/AppError";
 import Contact from "../../models/Contact";
 import CreateContactService from "./CreateContactService";
 
-interface ExtraInfo {
+interface Extrainfo {
     name: string;
     value: string;
 }
@@ -12,7 +12,7 @@ interface Request {
     number: string;
     email?: string;
     profilePicUrl?: string;
-    extraInfo?: ExtraInfo[];
+    extraInfo?: Extrainfo[];
 }
 
 const GetContactService = async ({ name, number }: Request): Promise<Contact> => {

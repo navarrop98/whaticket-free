@@ -15,12 +15,9 @@ const KEY_MAP: { [T in keyof SignalDataTypeMap]: string } = {
   'sender-key-memory': 'senderKeyMemory',
   'app-state-sync-key': 'appStateSyncKeys',
   'app-state-sync-version': 'appStateVersions',
-  'lid-mapping': 'lidMappings',        // Línea añadida
-  'device-list': 'deviceLists',        // Línea añadida
-  tctoken: 'tctokens'                  // Línea añadida
-};
+ };
 
-
+ 
 const authState = async (
   whatsapp: Whatsapp
 ): Promise<{ state: AuthenticationState; saveState: () => void }> => {

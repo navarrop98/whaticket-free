@@ -2,7 +2,7 @@ import AppError from "../../errors/AppError";
 import Contact from "../../models/Contact";
 import ContactCustomField from "../../models/ContactCustomField";
 
-interface ExtraInfo {
+interface Extrainfo {
   id?: number;
   name: string;
   value: string;
@@ -11,7 +11,7 @@ interface ContactData {
   email?: string;
   number?: string;
   name?: string;
-  extraInfo?: ExtraInfo[];
+  extrainfo?: Extrainfo[];
 }
 
 interface Request {
@@ -23,28 +23,28 @@ const UpdateContactService = async ({
   contactData,
   contactId
 }: Request): Promise<Contact> => {
-  const { email, name, number, extraInfo } = contactData;
+  const { email, name, number, extrainfo } = contactData;
 
   const contact = await Contact.findOne({
     where: { id: contactId },
     attributes: ["id", "name", "number", "email", "profilePicUrl"],
-    include: ["extraInfo"]
+    
   });
 
   if (!contact) {
     throw new AppError("ERR_NO_CONTACT_FOUND", 404);
   }
 
-  if (extraInfo) {
+  if (extrainfo) {
     await Promise.all(
-      extraInfo.map(async info => {
+      extrainfo.map(async info => {
         await ContactCustomField.upsert({ ...info, contactId: contact.id });
       })
     );
 
     await Promise.all(
-      contact.extraInfo.map(async oldInfo => {
-        const stillExists = extraInfo.findIndex(info => info.id === oldInfo.id);
+      contact.extrainfo.map(async oldInfo => {
+        const stillExists = extrainfo.findIndex(info => info.id === oldInfo.id);
 
         if (stillExists === -1) {
           await ContactCustomField.destroy({ where: { id: oldInfo.id } });
@@ -61,7 +61,7 @@ const UpdateContactService = async ({
 
   await contact.reload({
     attributes: ["id", "name", "number", "email", "profilePicUrl"],
-    include: ["extraInfo"]
+    
   });
 
   return contact;

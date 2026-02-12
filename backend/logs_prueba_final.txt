@@ -1,0 +1,453 @@
+[TAILING] Tailing last 200 lines for [whaticket-backend] process (change the value with --lines option)
+/home/whaticketapp/.pm2/logs/whaticket-backend-error-0.log last 200 lines:
+0|whaticke |     length: 217,
+0|whaticke |     severity: 'ERROR',
+0|whaticke |     code: '23505',
+0|whaticke |     detail: 'Key (number)=(5492478610999) already exists.',
+0|whaticke |     hint: undefined,
+0|whaticke |     position: undefined,
+0|whaticke |     internalPosition: undefined,
+0|whaticke |     internalQuery: undefined,
+0|whaticke |     where: undefined,
+0|whaticke |     schema: 'public',
+0|whaticke |     table: 'Contacts',
+0|whaticke |     column: undefined,
+0|whaticke |     dataType: undefined,
+0|whaticke |     constraint: 'Contacts_number_key',
+0|whaticke |     file: 'nbtinsert.c',
+0|whaticke |     line: '663',
+0|whaticke |     routine: '_bt_check_unique',
+0|whaticke |     sql: 'INSERT INTO "Contacts" ("id","name","number","email","profilePicUrl","isGroup","extrainfo","companyId","whatsappId","lid","createdAt","updatedAt") VALUES (DEFAULT,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;',
+0|whaticke |     parameters: [
+0|whaticke |       'secundaria1arrecifes',
+0|whaticke |       '5492478610999',
+0|whaticke |       '',
+0|whaticke |       'https://pps.whatsapp.net/v/t61.24694-24/560552491_866249843049949_494321501343227340_n.jpg?stp=dst-jpg_s96x96_tt6&ccb=11-4&oh=01_Q5Aa3gFETp3gEVboU8RODqvVwFt8fxy9Ak27S0OW2tUUfmAa8A&oe=69823922&_nc_sid=5e03e0&_nc_cat=102',
+0|whaticke |       false,
+0|whaticke |       '[]',
+0|whaticke |       1,
+0|whaticke |       11,
+0|whaticke |       '80715924414582@lid',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00'
+0|whaticke |     ]
+0|whaticke |   },
+0|whaticke |   original: error: duplicate key value violates unique constraint "Contacts_number_key"
+0|whaticke |       at Parser.parseErrorMessage (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:285:98)
+0|whaticke |       at Parser.handlePacket (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:122:29)
+0|whaticke |       at Parser.parse (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:35:38)
+0|whaticke |       at Socket.<anonymous> (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/index.js:11:42)
+0|whaticke |       at Socket.emit (node:events:519:28)
+0|whaticke |       at Socket.emit (node:domain:489:12)
+0|whaticke |       at addChunk (node:internal/streams/readable:561:12)
+0|whaticke |       at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+0|whaticke |       at Readable.push (node:internal/streams/readable:392:5)
+0|whaticke |       at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+0|whaticke |       at TCP.callbackTrampoline (node:internal/async_hooks:130:17) {
+0|whaticke |     length: 217,
+0|whaticke |     severity: 'ERROR',
+0|whaticke |     code: '23505',
+0|whaticke |     detail: 'Key (number)=(5492478610999) already exists.',
+0|whaticke |     hint: undefined,
+0|whaticke |     position: undefined,
+0|whaticke |     internalPosition: undefined,
+0|whaticke |     internalQuery: undefined,
+0|whaticke |     where: undefined,
+0|whaticke |     schema: 'public',
+0|whaticke |     table: 'Contacts',
+0|whaticke |     column: undefined,
+0|whaticke |     dataType: undefined,
+0|whaticke |     constraint: 'Contacts_number_key',
+0|whaticke |     file: 'nbtinsert.c',
+0|whaticke |     line: '663',
+0|whaticke |     routine: '_bt_check_unique',
+0|whaticke |     sql: 'INSERT INTO "Contacts" ("id","name","number","email","profilePicUrl","isGroup","extrainfo","companyId","whatsappId","lid","createdAt","updatedAt") VALUES (DEFAULT,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;',
+0|whaticke |     parameters: [
+0|whaticke |       'secundaria1arrecifes',
+0|whaticke |       '5492478610999',
+0|whaticke |       '',
+0|whaticke |       'https://pps.whatsapp.net/v/t61.24694-24/560552491_866249843049949_494321501343227340_n.jpg?stp=dst-jpg_s96x96_tt6&ccb=11-4&oh=01_Q5Aa3gFETp3gEVboU8RODqvVwFt8fxy9Ak27S0OW2tUUfmAa8A&oe=69823922&_nc_sid=5e03e0&_nc_cat=102',
+0|whaticke |       false,
+0|whaticke |       '[]',
+0|whaticke |       1,
+0|whaticke |       11,
+0|whaticke |       '80715924414582@lid',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00'
+0|whaticke |     ]
+0|whaticke |   },
+0|whaticke |   sql: 'INSERT INTO "Contacts" ("id","name","number","email","profilePicUrl","isGroup","extrainfo","companyId","whatsappId","lid","createdAt","updatedAt") VALUES (DEFAULT,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;'
+0|whaticke | }
+0|whaticke | ❌ ERROR CRÍTICO: No se encontró contacto existente a pesar del error de duplicado
+0|whaticke |    Número: 5492478610999
+0|whaticke |    Company ID: 1
+0|whaticke | ❌ Error en handleMessage: UniqueConstraintError [SequelizeUniqueConstraintError]: Validation error
+0|whaticke |     at Query.formatError (/home/whaticketapp/whaticket-free/backend/node_modules/sequelize/lib/dialects/postgres/query.js:324:18)
+0|whaticke |     at /home/whaticketapp/whaticket-free/backend/node_modules/sequelize/lib/dialects/postgres/query.js:72:18
+0|whaticke |     at tryCatcher (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/util.js:16:23)
+0|whaticke |     at Promise._settlePromiseFromHandler (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/promise.js:547:31)
+0|whaticke |     at Promise._settlePromise (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/promise.js:604:18)
+0|whaticke |     at Promise._settlePromise0 (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/promise.js:649:10)
+0|whaticke |     at Promise._settlePromises (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/promise.js:725:18)
+0|whaticke |     at _drainQueueStep (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/async.js:93:12)
+0|whaticke |     at _drainQueue (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/async.js:86:9)
+0|whaticke |     at Async._drainQueues (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/async.js:102:5)
+0|whaticke |     at Async.drainQueues (/home/whaticketapp/whaticket-free/backend/node_modules/bluebird/js/release/async.js:15:14)
+0|whaticke |     at process.processImmediate (node:internal/timers:485:21)
+0|whaticke |     at process.topLevelDomainCallback (node:domain:161:15)
+0|whaticke |     at process.callbackTrampoline (node:internal/async_hooks:128:24) {
+0|whaticke |   errors: [
+0|whaticke |     ValidationErrorItem {
+0|whaticke |       message: 'number must be unique',
+0|whaticke |       type: 'unique violation',
+0|whaticke |       path: 'number',
+0|whaticke |       value: '5492478610999',
+0|whaticke |       origin: 'DB',
+0|whaticke |       instance: [Contact],
+0|whaticke |       validatorKey: 'not_unique',
+0|whaticke |       validatorName: null,
+0|whaticke |       validatorArgs: []
+0|whaticke |     }
+0|whaticke |   ],
+0|whaticke |   fields: { number: '5492478610999' },
+0|whaticke |   parent: error: duplicate key value violates unique constraint "Contacts_number_key"
+0|whaticke |       at Parser.parseErrorMessage (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:285:98)
+0|whaticke |       at Parser.handlePacket (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:122:29)
+0|whaticke |       at Parser.parse (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:35:38)
+0|whaticke |       at Socket.<anonymous> (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/index.js:11:42)
+0|whaticke |       at Socket.emit (node:events:519:28)
+0|whaticke |       at Socket.emit (node:domain:489:12)
+0|whaticke |       at addChunk (node:internal/streams/readable:561:12)
+0|whaticke |       at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+0|whaticke |       at Readable.push (node:internal/streams/readable:392:5)
+0|whaticke |       at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+0|whaticke |       at TCP.callbackTrampoline (node:internal/async_hooks:130:17) {
+0|whaticke |     length: 217,
+0|whaticke |     severity: 'ERROR',
+0|whaticke |     code: '23505',
+0|whaticke |     detail: 'Key (number)=(5492478610999) already exists.',
+0|whaticke |     hint: undefined,
+0|whaticke |     position: undefined,
+0|whaticke |     internalPosition: undefined,
+0|whaticke |     internalQuery: undefined,
+0|whaticke |     where: undefined,
+0|whaticke |     schema: 'public',
+0|whaticke |     table: 'Contacts',
+0|whaticke |     column: undefined,
+0|whaticke |     dataType: undefined,
+0|whaticke |     constraint: 'Contacts_number_key',
+0|whaticke |     file: 'nbtinsert.c',
+0|whaticke |     line: '663',
+0|whaticke |     routine: '_bt_check_unique',
+0|whaticke |     sql: 'INSERT INTO "Contacts" ("id","name","number","email","profilePicUrl","isGroup","extrainfo","companyId","whatsappId","lid","createdAt","updatedAt") VALUES (DEFAULT,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;',
+0|whaticke |     parameters: [
+0|whaticke |       'secundaria1arrecifes',
+0|whaticke |       '5492478610999',
+0|whaticke |       '',
+0|whaticke |       'https://pps.whatsapp.net/v/t61.24694-24/560552491_866249843049949_494321501343227340_n.jpg?stp=dst-jpg_s96x96_tt6&ccb=11-4&oh=01_Q5Aa3gFETp3gEVboU8RODqvVwFt8fxy9Ak27S0OW2tUUfmAa8A&oe=69823922&_nc_sid=5e03e0&_nc_cat=102',
+0|whaticke |       false,
+0|whaticke |       '[]',
+0|whaticke |       1,
+0|whaticke |       11,
+0|whaticke |       '80715924414582@lid',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00'
+0|whaticke |     ]
+0|whaticke |   },
+0|whaticke |   original: error: duplicate key value violates unique constraint "Contacts_number_key"
+0|whaticke |       at Parser.parseErrorMessage (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:285:98)
+0|whaticke |       at Parser.handlePacket (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:122:29)
+0|whaticke |       at Parser.parse (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/parser.js:35:38)
+0|whaticke |       at Socket.<anonymous> (/home/whaticketapp/whaticket-free/backend/node_modules/pg-protocol/dist/index.js:11:42)
+0|whaticke |       at Socket.emit (node:events:519:28)
+0|whaticke |       at Socket.emit (node:domain:489:12)
+0|whaticke |       at addChunk (node:internal/streams/readable:561:12)
+0|whaticke |       at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+0|whaticke |       at Readable.push (node:internal/streams/readable:392:5)
+0|whaticke |       at TCP.onStreamRead (node:internal/stream_base_commons:189:23)
+0|whaticke |       at TCP.callbackTrampoline (node:internal/async_hooks:130:17) {
+0|whaticke |     length: 217,
+0|whaticke |     severity: 'ERROR',
+0|whaticke |     code: '23505',
+0|whaticke |     detail: 'Key (number)=(5492478610999) already exists.',
+0|whaticke |     hint: undefined,
+0|whaticke |     position: undefined,
+0|whaticke |     internalPosition: undefined,
+0|whaticke |     internalQuery: undefined,
+0|whaticke |     where: undefined,
+0|whaticke |     schema: 'public',
+0|whaticke |     table: 'Contacts',
+0|whaticke |     column: undefined,
+0|whaticke |     dataType: undefined,
+0|whaticke |     constraint: 'Contacts_number_key',
+0|whaticke |     file: 'nbtinsert.c',
+0|whaticke |     line: '663',
+0|whaticke |     routine: '_bt_check_unique',
+0|whaticke |     sql: 'INSERT INTO "Contacts" ("id","name","number","email","profilePicUrl","isGroup","extrainfo","companyId","whatsappId","lid","createdAt","updatedAt") VALUES (DEFAULT,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;',
+0|whaticke |     parameters: [
+0|whaticke |       'secundaria1arrecifes',
+0|whaticke |       '5492478610999',
+0|whaticke |       '',
+0|whaticke |       'https://pps.whatsapp.net/v/t61.24694-24/560552491_866249843049949_494321501343227340_n.jpg?stp=dst-jpg_s96x96_tt6&ccb=11-4&oh=01_Q5Aa3gFETp3gEVboU8RODqvVwFt8fxy9Ak27S0OW2tUUfmAa8A&oe=69823922&_nc_sid=5e03e0&_nc_cat=102',
+0|whaticke |       false,
+0|whaticke |       '[]',
+0|whaticke |       1,
+0|whaticke |       11,
+0|whaticke |       '80715924414582@lid',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00',
+0|whaticke |       '2026-01-24 17:26:38.724 -03:00'
+0|whaticke |     ]
+0|whaticke |   },
+0|whaticke |   sql: 'INSERT INTO "Contacts" ("id","name","number","email","profilePicUrl","isGroup","extrainfo","companyId","whatsappId","lid","createdAt","updatedAt") VALUES (DEFAULT,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;'
+0|whaticke | }
+
+/home/whaticketapp/.pm2/logs/whaticket-backend-out-0.log last 200 lines:
+0|whaticke |    Input: "80715924414582@lid"
+0|whaticke |    SessionId: "11"
+0|whaticke |    Clean input: "80715924414582" (14 dígitos)
+0|whaticke |    Tipo: Número normal
+0|whaticke | 
+0|whaticke | 🔍 Buscando mapping exacto: lid-mapping-80715924414582_reverse
+0|whaticke | ✅ Encontrado 1 mapping(s) exacto(s)
+0|whaticke |    whatsappId: 11
+0|whaticke |    value: "5492478610999"
+0|whaticke | 🎯 ÉXITO: 80715924414582 -> 5492478610999
+0|whaticke | 🎯 [BAILEYS_SESSIONS] CONVERSIÓN EXITOSA:
+0|whaticke |    Input original: 80715924414582@lid
+0|whaticke |    Número real: 5492478610999
+0|whaticke |    JID real: 5492478610999@s.whatsapp.net
+0|whaticke |    Es LID? true
+0|whaticke | ✅ FIN obtenerNumeroRealDeMensaje - BAILEYS_SESSIONS
+0|whaticke | 
+0|whaticke | 📞 === ANTES DE verifyContact ===
+0|whaticke | msgContact recibido:
+0|whaticke |   id: 5492478610999@s.whatsapp.net
+0|whaticke |   name: secundaria1arrecifes
+0|whaticke |   number: 5492478610999
+0|whaticke |   esLid: SÍ
+0|whaticke |   lid: 80715924414582@lid
+0|whaticke |   originalJid: 80715924414582@lid
+0|whaticke | ===============================
+0|whaticke | 
+0|whaticke | 
+0|whaticke | 🔍 === verifyContact INICIO ===
+0|whaticke | 📥 DATOS DE ENTRADA:
+0|whaticke |    ID: 5492478610999@s.whatsapp.net
+0|whaticke |    Nombre: secundaria1arrecifes
+0|whaticke |    Número recibido: 5492478610999
+0|whaticke |    Es LID?: SÍ
+0|whaticke |    LID: 80715924414582@lid
+0|whaticke |    JID original: 80715924414582@lid
+0|whaticke | 🖼️  Foto de perfil obtenida
+0|whaticke | 👤 VERIFICANDO CONTACTO:
+0|whaticke |    ID recibido: 5492478610999@s.whatsapp.net
+0|whaticke |    Número en msgContact: 5492478610999
+0|whaticke |    Es LID?: SÍ
+0|whaticke |    LID original: 80715924414582@lid
+0|whaticke |    JID original: 80715924414582@lid
+0|whaticke | 🔍 Contacto tiene LID, verificando número real: 80715924414582@lid
+0|whaticke | 
+0|whaticke | 🔍 [GetRealNumberFromLid] INICIANDO BUSQUEDA
+0|whaticke |    Input: "80715924414582@lid"
+0|whaticke |    SessionId: "11"
+0|whaticke |    Clean input: "80715924414582" (14 dígitos)
+0|whaticke |    Tipo: Número normal
+0|whaticke | 
+0|whaticke | 🔍 Buscando mapping exacto: lid-mapping-80715924414582_reverse
+0|whaticke | ✅ Encontrado 1 mapping(s) exacto(s)
+0|whaticke |    whatsappId: 11
+0|whaticke |    value: "5492478610999"
+0|whaticke | 🎯 ÉXITO: 80715924414582 -> 5492478610999
+0|whaticke | ✅ [BAILEYS_SESSIONS] LID convertido a número en verifyContact: 5492478610999
+0|whaticke | 📝 DATOS FINALES DEL CONTACTO:
+0|whaticke |    Nombre: secundaria1arrecifes
+0|whaticke |    Número: 5492478610999
+0|whaticke |    LID guardado: 80715924414582@lid
+0|whaticke |    Company ID: 1
+0|whaticke |    WhatsApp ID: 11
+0|whaticke |    originaljid: 80715924414582@lid
+0|whaticke | ⚠️  ERROR DE DUPLICADO DETECTADO
+0|whaticke |    Buscando contacto existente para: 5492478610999
+0|whaticke |    Company ID: 1
+0|whaticke | [20:26:38.770] ERROR: Error handling whatsapp message: Err: SequelizeUniqueConstraintError: Validation error
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:46.446] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:46.447] INFO: Socket ID:
+0|whaticke | [20:26:46.447] INFO: Handshake query:
+0|whaticke | [20:26:46.447] INFO: Token param:
+0|whaticke | [20:26:46.448] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:46.450] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:46.450] INFO: Socket ID:
+0|whaticke | [20:26:46.451] INFO: Handshake query:
+0|whaticke | [20:26:46.451] INFO: Token param:
+0|whaticke | [20:26:46.452] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:46.454] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:46.454] INFO: Socket ID:
+0|whaticke | [20:26:46.454] INFO: Handshake query:
+0|whaticke | [20:26:46.455] INFO: Token param:
+0|whaticke | [20:26:46.455] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:47.402] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:47.402] INFO: Socket ID:
+0|whaticke | [20:26:47.403] INFO: Handshake query:
+0|whaticke | [20:26:47.403] INFO: Token param:
+0|whaticke | [20:26:47.404] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:48.360] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:48.361] INFO: Socket ID:
+0|whaticke | [20:26:48.361] INFO: Handshake query:
+0|whaticke | [20:26:48.361] INFO: Token param:
+0|whaticke | [20:26:48.362] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:48.369] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:48.369] INFO: Socket ID:
+0|whaticke | [20:26:48.370] INFO: Handshake query:
+0|whaticke | [20:26:48.370] INFO: Token param:
+0|whaticke | [20:26:48.371] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:49.687] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:49.687] INFO: Socket ID:
+0|whaticke | [20:26:49.687] INFO: Handshake query:
+0|whaticke | [20:26:49.687] INFO: Token param:
+0|whaticke | [20:26:49.688] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:49.692] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:49.692] INFO: Socket ID:
+0|whaticke | [20:26:49.692] INFO: Handshake query:
+0|whaticke | [20:26:49.692] INFO: Token param:
+0|whaticke | [20:26:49.693] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:26:50.468] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:26:50.468] INFO: Socket ID:
+0|whaticke | [20:26:50.468] INFO: Handshake query:
+0|whaticke | [20:26:50.469] INFO: Token param:
+0|whaticke | [20:26:50.469] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.504] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.505] INFO: Socket ID:
+0|whaticke | [20:27:09.505] INFO: Handshake query:
+0|whaticke | [20:27:09.506] INFO: Token param:
+0|whaticke | [20:27:09.506] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.516] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.517] INFO: Socket ID:
+0|whaticke | [20:27:09.517] INFO: Handshake query:
+0|whaticke | [20:27:09.517] INFO: Token param:
+0|whaticke | [20:27:09.518] ERROR: Middleware authentication FAILED:
+0|whaticke | [20:27:09.631] WARN:
+0|whaticke |     message: "Invalid token. We'll try to assign a new one on next request"
+0|whaticke |     statusCode: 403
+0|whaticke | [20:27:09.820] WARN:
+0|whaticke |     message: "Invalid token. We'll try to assign a new one on next request"
+0|whaticke |     statusCode: 403
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.830] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.831] INFO: Socket ID:
+0|whaticke | [20:27:09.831] INFO: Handshake query:
+0|whaticke | [20:27:09.831] INFO: Token param:
+0|whaticke | [20:27:09.831] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.863] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.863] INFO: Socket ID:
+0|whaticke | [20:27:09.863] INFO: Handshake query:
+0|whaticke | [20:27:09.863] INFO: Token param:
+0|whaticke | [20:27:09.863] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.866] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.866] INFO: Socket ID:
+0|whaticke | [20:27:09.866] INFO: Handshake query:
+0|whaticke | [20:27:09.866] INFO: Token param:
+0|whaticke | [20:27:09.866] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.869] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.869] INFO: Socket ID:
+0|whaticke | [20:27:09.869] INFO: Handshake query:
+0|whaticke | [20:27:09.869] INFO: Token param:
+0|whaticke | [20:27:09.869] ERROR: Middleware authentication FAILED:
+0|whaticke | [20:27:09.872] WARN:
+0|whaticke |     message: "Invalid token. We'll try to assign a new one on next request"
+0|whaticke |     statusCode: 403
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.874] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.874] INFO: Socket ID:
+0|whaticke | [20:27:09.874] INFO: Handshake query:
+0|whaticke | [20:27:09.874] INFO: Token param:
+0|whaticke | [20:27:09.875] ERROR: Middleware authentication FAILED:
+0|whaticke | [20:27:09.877] WARN:
+0|whaticke |     message: "Invalid token. We'll try to assign a new one on next request"
+0|whaticke |     statusCode: 403
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.879] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.879] INFO: Socket ID:
+0|whaticke | [20:27:09.879] INFO: Handshake query:
+0|whaticke | [20:27:09.879] INFO: Token param:
+0|whaticke | [20:27:09.880] ERROR: Middleware authentication FAILED:
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:09.962] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:09.962] INFO: Socket ID:
+0|whaticke | [20:27:09.963] INFO: Handshake query:
+0|whaticke | [20:27:09.963] INFO: Token param:
+0|whaticke | [20:27:09.963] ERROR: Middleware authentication FAILED:
+0|whaticke | [20:27:10.587] INFO: Ticket 70 messages read
+0|whaticke | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticke | [20:27:10.777] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticke | [20:27:10.777] INFO: Socket ID:
+0|whaticke | [20:27:10.777] INFO: Handshake query:
+0|whaticke | [20:27:10.777] INFO: Token param:
+0|whaticke | [20:27:10.777] INFO: Middleware SUCCESS - User ID:
+0|whaticke | 🟢🟢🟢 CONNECTION EVENT FINALLY FIRED!
+0|whaticke | [20:27:10.778] INFO: === CONNECTION EVENT ===
+0|whaticke | [20:27:10.778] INFO: Socket ID:
+0|whaticke | [20:27:10.778] INFO: Attached user ID:
+0|whaticke | [20:27:11.060] INFO: Client Connected - User:
+
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:55.435] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:55.436] INFO: Socket ID:
+0|whaticket-backend  | [20:27:55.436] INFO: Handshake query:
+0|whaticket-backend  | [20:27:55.436] INFO: Token param:
+0|whaticket-backend  | [20:27:55.436] ERROR: Middleware authentication FAILED:
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:56.387] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:56.388] INFO: Socket ID:
+0|whaticket-backend  | [20:27:56.388] INFO: Handshake query:
+0|whaticket-backend  | [20:27:56.388] INFO: Token param:
+0|whaticket-backend  | [20:27:56.389] ERROR: Middleware authentication FAILED:
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:56.391] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:56.392] INFO: Socket ID:
+0|whaticket-backend  | [20:27:56.392] INFO: Handshake query:
+0|whaticket-backend  | [20:27:56.392] INFO: Token param:
+0|whaticket-backend  | [20:27:56.392] ERROR: Middleware authentication FAILED:
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:56.395] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:56.395] INFO: Socket ID:
+0|whaticket-backend  | [20:27:56.396] INFO: Handshake query:
+0|whaticket-backend  | [20:27:56.396] INFO: Token param:
+0|whaticket-backend  | [20:27:56.396] ERROR: Middleware authentication FAILED:
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:56.444] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:56.444] INFO: Socket ID:
+0|whaticket-backend  | [20:27:56.445] INFO: Handshake query:
+0|whaticket-backend  | [20:27:56.445] INFO: Token param:
+0|whaticket-backend  | [20:27:56.445] ERROR: Middleware authentication FAILED:
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:56.450] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:56.450] INFO: Socket ID:
+0|whaticket-backend  | [20:27:56.450] INFO: Handshake query:
+0|whaticket-backend  | [20:27:56.450] INFO: Token param:
+0|whaticket-backend  | [20:27:56.451] ERROR: Middleware authentication FAILED:
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:56.453] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:56.453] INFO: Socket ID:
+0|whaticket-backend  | [20:27:56.453] INFO: Handshake query:
+0|whaticket-backend  | [20:27:56.453] INFO: Token param:
+0|whaticket-backend  | [20:27:56.453] ERROR: Middleware authentication FAILED:
+0|whaticket-backend  | 🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!
+0|whaticket-backend  | [20:27:56.664] INFO: === MIDDLEWARE EXECUTED ===
+0|whaticket-backend  | [20:27:56.664] INFO: Socket ID:
+0|whaticket-backend  | [20:27:56.664] INFO: Handshake query:
+0|whaticket-backend  | [20:27:56.664] INFO: Token param:
+0|whaticket-backend  | [20:27:56.665] ERROR: Middleware authentication FAILED:

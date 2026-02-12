@@ -1,0 +1,423 @@
+import { join } from "path";
+import { promisify } from "util";
+import { writeFile } from "fs";
+import * as Sentry from "@sentry/node";
+
+import {
+  downloadContentFromMessage,
+  jidNormalizedUser,
+  MediaType,
+  MessageUpsertType,
+  proto,
+  WAMessage,
+  WAMessageUpdate,
+  WASocket,
+  getContentType,
+  extractMessageContent,
+  WAMessageStubType,
+  AnyMessageContent
+} from "@whiskeysockets/baileys";
+
+import Contact from "../../models/Contact";
+import Ticket from "../../models/Ticket";
+import Message from "../../models/Message";
+
+import { getIO } from "../../libs/socket";
+import CreateMessageService from "../MessageServices/CreateMessageService";
+import { logger } from "../../utils/logger";
+import CreateOrUpdateContactService from "../ContactServices/CreateOrUpdateContactService";
+import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
+import ShowWhatsAppService from "../WhatsappService/ShowWhatsAppService";
+import formatBody from "../../helpers/Mustache";
+import { Store } from "../../libs/store";
+import Setting from "../../models/Setting";
+import { debounce } from "../../helpers/Debounce";
+import UpdateTicketService from "../TicketServices/UpdateTicketService";
+import { sayChatbot } from "./ChatBotListener";
+import hourExpedient from "./hourExpedient";
+import { NormalizadorMejorado } from "../../utils/NormalizadorMejorado"; // IMPORTAR EL NUEVO NORMALIZADOR
+
+type Session = WASocket & {
+  id?: number;
+  store?: Store;
+};
+
+interface ImessageUpsert {
+  messages: proto.IWebMessageInfo[];
+  type: MessageUpsertType;
+}
+
+interface IMe {
+  name: string;
+  id: string;
+  lid?: string;
+  esLid?: boolean;
+  number?: string;
+  originalJid?: string; // NUEVO: Guardar el JID original
+}
+
+const writeFileAsync = promisify(writeFile);
+
+// Instancia global del normalizador
+const normalizador = new NormalizadorMejorado();
+
+// ========== FUNCIÓN MEJORADA PARA OBTENER NÚMERO REAL ==========
+async function obtenerNumeroRealDeMensaje(wbot: Session, message: proto.IWebMessageInfo): Promise<{
+  numeroReal: string;
+  jidReal: string;
+  esLid: boolean;
+  lidOriginal?: string;
+}> {
+  let jid = message.key.remoteJid || '';
+  
+  if (message.key.participant) {
+    jid = message.key.participant;
+  }
+  
+  if (!jid) {
+    return {
+      numeroReal: '',
+      jidReal: '',
+      esLid: false
+    };
+  }
+  
+  console.log('🔍 ANALIZANDO JID:', jid);
+  console.log('   Tipo:', jid.includes(':') ? 'LID' : jid.includes('@s.whatsapp.net') ? 'Tradicional' : 'Desconocido');
+  
+  // Usar el normalizador para obtener el número real
+  try {
+    const numeroReal = await normalizador.obtenerNumeroReal(wbot, jid);
+    const esLid = jid.includes(':') || (jid.includes('.') && !jid.includes('@s.whatsapp.net'));
+    
+    console.log('✅ RESULTADO:');
+    console.log('   JID original:', jid);
+    console.log('   Número real obtenido:', numeroReal);
+    console.log('   Es LID?:', esLid ? 'SÍ' : 'NO');
+    
+    return {
+      numeroReal,
+      jidReal: numeroReal + '@s.whatsapp.net',
+      esLid,
+      lidOriginal: esLid ? jid : undefined
+    };
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo número real:', error);
+    
+    // Fallback: intentar extraer número manualmente
+    let numeroFallback = jid.split('@')[0];
+    if (jid.includes(':')) {
+      const match = jid.match(/^(\d+)[:\-]/);
+      if (match && match[1]) {
+        numeroFallback = match[1];
+      }
+    }
+    
+    return {
+      numeroReal: numeroFallback,
+      jidReal: numeroFallback + '@s.whatsapp.net',
+      esLid: false
+    };
+  }
+}
+// ========== FIN FUNCIÓN MEJORADA ==========
+
+const getTypeMessage = (msg: proto.IWebMessageInfo): string => {
+  return getContentType(msg.message);
+};
+
+// ... (mantén las funciones getBodyButton, msgLocation, getBodyMessage igual que antes) ...
+
+const getMeSocket = (wbot: Session): IMe => {
+  return {
+    id: jidNormalizedUser((wbot as WASocket).user.id),
+    name: (wbot as WASocket).user.name || ""
+  };
+};
+
+const getSenderMessage = (msg: proto.IWebMessageInfo, wbot: Session): string => {
+  const me = getMeSocket(wbot);
+  if (msg.key.fromMe) return me.id;
+
+  const senderId = msg.participant || msg.key.participant || msg.key.remoteJid || undefined;
+  return senderId ? jidNormalizedUser(senderId) : "";
+};
+
+// ========== FUNCIÓN COMPLETAMENTE REESCRITA PARA MANEJAR LIDs ==========
+const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session): Promise<IMe> => {
+  const isGroup = msg.key.remoteJid?.includes("g.us") || false;
+  
+  if (isGroup) {
+    return {
+      id: getSenderMessage(msg, wbot),
+      name: msg.pushName || ""
+    };
+  }
+  
+  // Para mensajes individuales, usar nuestro normalizador
+  try {
+    const { numeroReal, jidReal, esLid, lidOriginal } = await obtenerNumeroRealDeMensaje(wbot, msg);
+    
+    if (!numeroReal) {
+      throw new Error('No se pudo obtener número real');
+    }
+    
+    return {
+      id: jidReal,
+      name: msg.key.fromMe ? numeroReal : msg.pushName || numeroReal,
+      number: numeroReal,
+      lid: lidOriginal,
+      esLid,
+      originalJid: msg.key.remoteJid || '' // Guardar el JID original
+    };
+    
+  } catch (error) {
+    console.error('❌ Error en getContactMessage:', error);
+    
+    // Fallback extremo
+    const rawNumber = msg.key.remoteJid?.replace(/\D/g, "") || "";
+    return {
+      id: msg.key.remoteJid || "",
+      name: msg.key.fromMe ? rawNumber : msg.pushName || rawNumber,
+      number: rawNumber
+    };
+  }
+};
+// ========== FIN FUNCIÓN REESCRITA ==========
+
+// ... (mantén las funciones downloadMedia, verifyContact, verifyQuotedMessage, etc.) ...
+
+// ========== VERIFYCONTACT ACTUALIZADO ==========
+const verifyContact = async (msgContact: IMe, wbot: Session): Promise<Contact> => {
+  let profilePicUrl: string;
+  try {
+    profilePicUrl = await wbot.profilePictureUrl(msgContact.id);
+  } catch {
+    profilePicUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/nopicture.png`;
+  }
+
+  let phoneNumber = msgContact.number || msgContact.id.replace(/\D/g, "");
+  
+  console.log('👤 VERIFICANDO CONTACTO:');
+  console.log('   ID recibido:', msgContact.id);
+  console.log('   Número en msgContact:', msgContact.number);
+  console.log('   Es LID?:', msgContact.esLid ? 'SÍ' : 'NO');
+  console.log('   LID original:', msgContact.lid || 'N/A');
+  console.log('   JID original:', msgContact.originalJid || 'N/A');
+  
+  // Si tenemos un LID, intentar obtener el número real
+  if (msgContact.lid) {
+    try {
+      console.log('🔍 Contacto tiene LID, verificando número real:', msgContact.lid);
+      const results = await wbot.onWhatsApp(msgContact.lid);
+      if (results && results.length > 0 && results[0]?.exists) {
+        phoneNumber = results[0].jid.split('@')[0];
+        console.log('✅ LID convertido a número en verifyContact:', phoneNumber);
+      }
+    } catch (error) {
+      console.error('❌ Error obteniendo número de LID:', error);
+    }
+  }
+  
+  // Si el ID mismo es un LID pero no lo capturamos antes
+  if (!msgContact.lid && (msgContact.id.includes(':') || (msgContact.id.includes('.') && !msgContact.id.includes('@s.whatsapp.net')))) {
+    try {
+      console.log('🔍 ID parece LID, verificando:', msgContact.id);
+      const results = await wbot.onWhatsApp(msgContact.id);
+      if (results && results.length > 0 && results[0]?.exists) {
+        phoneNumber = results[0].jid.split('@')[0];
+        console.log('✅ ID LID convertido a número:', phoneNumber);
+      }
+    } catch (error) {
+      console.error('❌ Error verificando ID LID:', error);
+    }
+  }
+
+  const contactData = {
+    name: msgContact?.name || phoneNumber,
+    number: phoneNumber,
+    profilePicUrl,
+    isGroup: msgContact.id.includes("g.us"),
+    lid: msgContact.lid || null,
+    originalJid: msgContact.originalJid || null
+  };
+
+  console.log('📝 DATOS FINALES DEL CONTACTO:');
+  console.log('   Nombre:', contactData.name);
+  console.log('   Número:', contactData.number);
+  console.log('   LID guardado:', contactData.lid);
+
+  const contact = CreateOrUpdateContactService(contactData);
+  return contact;
+};
+// ========== FIN VERIFYCONTACT ACTUALIZADO ==========
+
+// ... (mantén el resto de las funciones igual) ...
+
+const handleMessage = async (
+  msg: proto.IWebMessageInfo,
+  wbot: Session
+): Promise<void> => {
+  if (!isValidMsg(msg)) return;
+  
+  try {
+    let msgContact: IMe;
+    let groupContact: Contact | undefined;
+
+    const isGroup = msg.key.remoteJid?.endsWith("@g.us") || false;
+
+    const msgIsGroupBlock = await Setting.findOne({
+      where: { key: "CheckMsgIsGroup" }
+    });
+
+    const bodyMessage = getBodyMessage(msg);
+    const msgType = getTypeMessage(msg);
+
+    if (msgType === "protocolMessage") return;
+    
+    const hasMedia =
+      msg.message?.audioMessage ||
+      msg.message?.imageMessage ||
+      msg.message?.videoMessage ||
+      msg.message?.documentMessage ||
+      msg.message?.stickerMessage ||
+      msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+
+    if (msg.key.fromMe) {
+      if (/\u200e/.test(bodyMessage || "")) return;
+
+      if (
+        !hasMedia &&
+        msgType !== "conversation" &&
+        msgType !== "extendedTextMessage" &&
+        msgType !== "vcard" &&
+        msgType !== "reactionMessage" &&
+        msgType !== "ephemeralMessage" &&
+        msgType !== "protocolMessage" &&
+        msgType !== "viewOnceMessage"
+      )
+        return;
+      
+      msgContact = await getContactMessage(msg, wbot);
+    } else {
+      msgContact = await getContactMessage(msg, wbot);
+    }
+
+    if (msgIsGroupBlock?.value === "enabled" && isGroup) return;
+
+    if (isGroup) {
+      try {
+        const grupoMeta = await wbot.groupMetadata(msg.key.remoteJid!);
+        const msgGroupContact = {
+          id: grupoMeta.id,
+          name: grupoMeta.subject || ""
+        };
+        groupContact = await verifyContact(msgGroupContact, wbot);
+      } catch (error) {
+        console.error('Error obteniendo metadatos del grupo:', error);
+      }
+    }
+    
+    const whatsapp = await ShowWhatsAppService(wbot.id!);
+
+    // Obtener conteo de mensajes no leídos
+    const count = wbot.store && wbot.store.chats ?
+      wbot.store.chats.get(msg.key.remoteJid || msg.key.participant) :
+      undefined;
+
+    const unreadMessages = msg.key.fromMe ? 0 : count?.unreadCount || 1;
+
+    const contact = await verifyContact(msgContact, wbot);
+
+    // ========== DIAGNÓSTICO COMPLETO ==========
+    console.log('\n📊 DIAGNÓSTICO COMPLETO DEL MENSAJE:');
+    console.log('======================================');
+    console.log('📱 DATOS CRUDOS:');
+    console.log('   RemoteJid:', msg.key.remoteJid);
+    console.log('   Participant:', msg.key.participant);
+    console.log('   FromMe:', msg.key.fromMe);
+    console.log('   PushName:', msg.pushName);
+    console.log('   Tipo de mensaje:', msgType);
+    
+    console.log('\n🔍 ANÁLISIS LID:');
+    console.log('   JID analizado:', msg.key.remoteJid);
+    if (msg.key.remoteJid?.includes(':')) {
+      const partes = msg.key.remoteJid.split(':');
+      console.log('   Parte 1 (posible número):', partes[0]);
+      console.log('   Parte 2 (identificador):', partes[1]);
+    }
+    
+    console.log('\n👤 DATOS DEL CONTACTO:');
+    console.log('   Número en contacto BD:', contact.number);
+    console.log('   Contact ID:', contact.id);
+    console.log('   Nombre:', contact.name);
+    console.log('   LID guardado:', contact.lid);
+    console.log('======================================\n');
+
+    const ticket = await FindOrCreateTicketService({
+      contact,
+      whatsappId: wbot.id!,
+      unreadMessages,
+      groupContact,
+      channel: "whatsapp"
+    });
+
+    if (hasMedia) {
+      await verifyMediaMessage(msg, ticket, contact);
+    } else {
+      await verifyMessage(msg, ticket, contact);
+    }
+
+    const checkExpedient = await hourExpedient();
+    if (checkExpedient) {
+      if (
+        !ticket.queue &&
+        !isGroup &&
+        !msg.key.fromMe &&
+        !ticket.userId &&
+        whatsapp.queues.length >= 1
+      ) {
+        await verifyQueue(wbot, msg, ticket, contact);
+      }
+
+      if (ticket.queue && ticket.queueId) {
+        if (!ticket.user) {
+          await sayChatbot(ticket.queueId, wbot, ticket, contact, msg);
+        }
+      }
+    } else {
+      const getLastMessageFromMe = await Message.findOne({
+        where: {
+          ticketId: ticket.id,
+          fromMe: true
+        },
+        order: [["createdAt", "DESC"]]
+      });
+
+      if (
+        getLastMessageFromMe?.body ===
+        formatBody(`\u200e${whatsapp.outOfWorkMessage}`, contact)
+      )
+        return;
+
+      const body = formatBody(`\u200e${whatsapp.outOfWorkMessage}`, contact);
+      const sentMessage = await wbot.sendMessage(
+        `${contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+        {
+          text: body
+        }
+      );
+
+      await verifyMessage(sentMessage, ticket, contact);
+    }
+  } catch (err) {
+    console.error('❌ Error en handleMessage:', err);
+    Sentry.captureException(err);
+    logger.error(`Error handling whatsapp message: Err: ${err}`);
+  }
+};
+
+// ... (mantén el resto del archivo igual) ...
+
+export { wbotMessageListener, handleMessage };

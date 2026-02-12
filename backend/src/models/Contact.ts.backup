@@ -1,0 +1,66 @@
+// En models/Contact.ts
+import {
+  Model,
+  // ... otros imports
+} from "sequelize";
+
+class Contact extends Model<Contact> {
+  public id!: number;
+  public name!: string;
+  public number!: string;
+  public email?: string;
+  public profilePicUrl?: string;
+  public isGroup!: boolean;
+  public extraInfo?: JSON;
+  public companyId?: number;      // NUEVO
+  public lid?: string;           // NUEVO
+  public originalJid?: string;   // NUEVO
+  public whatsappId?: number;    // NUEVO
+  
+  // ... resto del modelo
+}
+
+Contact.init(
+  {
+    // ... campos existentes
+    name: DataTypes.STRING,
+    number: DataTypes.STRING,
+    email: DataTypes.STRING,
+    profilePicUrl: DataTypes.TEXT,
+    isGroup: DataTypes.BOOLEAN,
+    extraInfo: DataTypes.JSON,
+    
+    // NUEVOS CAMPOS
+    companyId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: "Companies",
+        key: "id"
+      },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL"
+    },
+    lid: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    originalJid: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    whatsappId: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: "Whatsapps",
+        key: "id"
+      },
+      onUpdate: "CASCADE",
+      onDelete: "SET NULL"
+    }
+  },
+  {
+    // ... opciones del modelo
+  }
+);
+
+export default Contact;

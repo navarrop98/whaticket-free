@@ -1,0 +1,176 @@
+import { Server as SocketIO } from "socket.io";
+import { Server } from "http";
+import { verify } from "jsonwebtoken";
+import AppError from "../errors/AppError";
+import { logger } from "../utils/logger";
+import authConfig from "../config/auth";
+import User from "../models/User";
+import Queue from "../models/Queue";
+import Ticket from "../models/Ticket";
+
+let io: SocketIO;
+
+export const initIO = (httpServer: Server): SocketIO => {
+  logger.info("=== INITIO CALLED ===");
+  logger.info("httpServer exists?", !!httpServer);
+  
+  // Si ya existe una instancia io, limpiarla
+  if (io) {
+    logger.warn("IO instance already exists! Closing previous instance...");
+    io.close();
+    io = null;
+  }
+
+  io = new SocketIO(httpServer, {
+    cors: {
+      origin: [process.env.FRONTEND_URL, "https://api.sistemasarrecifes.com.ar"],
+      credentials: true
+    },
+    allowEIO3: true,
+    transports: ["polling", "websocket"],
+    pingTimeout: 60000,
+    pingInterval: 25000
+  });
+
+  logger.info("=== BEFORE io.on('connection') ===");
+  logger.info("IO instance created successfully?", !!io);
+  
+  io.on("connection", async socket => {
+    logger.info("=== INSIDE CONNECTION HANDLER ===");
+    logger.info("=== SOCKET.IO CONNECTION ATTEMPT ===");
+    logger.info("Socket ID:", socket.id);
+    logger.info("Handshake query:", socket.handshake.query);
+    logger.info("Handshake auth:", socket.handshake.auth);
+    logger.info("Handshake headers:", socket.handshake.headers);
+    
+    // Debug detallado del query
+    logger.info("All query params:", JSON.stringify(socket.handshake.query));
+    
+    // Obtener token de múltiples fuentes posibles
+    let token = socket.handshake.query?.token;
+    logger.info("Token from 'token' param:", token);
+    logger.info("Type of token:", typeof token);
+    
+    // Si no está en 'token', buscar en 'auth_token' (por si acaso)
+    if (!token) {
+      token = socket.handshake.query?.auth_token;
+      logger.info("Token from 'auth_token' param:", token);
+    }
+    
+    // Si viene como string JSON entre comillas, parsearlo
+    if (token && typeof token === 'string') {
+      logger.info("Token length:", token.length);
+      logger.info("First 50 chars of token:", token.substring(0, 50));
+      
+      // El frontend usa JSON.parse(token) - puede estar enviando token como string JSON
+      if (token.startsWith('"') && token.endsWith('"')) {
+        try {
+          const parsedToken = JSON.parse(token);
+          logger.info("Token after JSON.parse:", parsedToken);
+          token = parsedToken;
+        } catch (e) {
+          logger.warn("Failed to JSON.parse token:", e.message);
+        }
+      }
+    }
+    
+    logger.info("Final token to verify:", token ? "PRESENT (length: " + token.length + ")" : "MISSING");
+    
+    if (!token) {
+      logger.error("No token provided in handshake");
+      socket.disconnect();
+      return io;
+    }
+    
+    let tokenData = null;
+    try {
+      tokenData = verify(token, authConfig.secret);
+      logger.debug(tokenData, "io-onConnection: tokenData");
+      logger.info("Token verification SUCCESS for user ID:", tokenData.id);
+    } catch (error) {
+      logger.error(error, "Error decoding token");
+      logger.error("Token that failed:", token.substring(0, 100) + "...");
+      socket.disconnect();
+      return io;
+    }
+
+    const userId = tokenData.id;
+
+    let user: User = null;
+    if (userId && userId !== "undefined" && userId !== "null") {
+      user = await User.findByPk(userId, { include: [Queue] });
+    }
+
+    logger.info("Client Connected - User ID:", userId);
+    socket.on("joinChatBox", (ticketId: string) => {
+      if (ticketId === "undefined") {
+        return;
+      }
+      Ticket.findByPk(ticketId).then(
+        ticket => {
+          // only admin and the current user of the ticket
+          // can join the message channel of it.
+          if (
+            ticket &&
+            (ticket?.userId === user.id || user.profile === "admin")
+          ) {
+            logger.debug(`User ${user.id} joined ticket ${ticketId} channel`);
+            socket.join(ticketId);
+          } else {
+            logger.info(
+              `Invalid attempt to join chanel of ticket ${ticketId} by user ${user.id}`
+            );
+          }
+        },
+        error => {
+          logger.error(error, `Error fetching ticket ${ticketId}`);
+        }
+      );
+    });
+
+    socket.on("joinNotification", () => {
+      if (user.profile === "admin") {
+        // admin can join all notifications
+        logger.debug(`Admin ${user.id} joined the notification channel.`);
+        socket.join("notification");
+      } else {
+        // normal users join notifications of the queues they participate
+        user.queues.forEach(queue => {
+          logger.debug(`User ${user.id} joined queue ${queue.id} channel.`);
+          socket.join(`queue-${queue.id}-notification`);
+        });
+      }
+    });
+
+    socket.on("joinTickets", (status: string) => {
+      if (user.profile === "admin") {
+        // only admin can join the notifications of a particular status
+        logger.debug(`Admin ${user.id} joined ${status} tickets channel.`);
+        socket.join(`${status}`);
+      } else {
+        // normal users can only receive messages of the queues they participate
+        user.queues.forEach(queue => {
+          logger.debug(
+            `User ${user.id} joined queue ${queue.id} ${status} tickets channel.`
+          );
+          socket.join(`queue-${queue.id}-${status}`);
+        });
+      }
+    });
+
+    socket.on("disconnect", () => {
+      logger.info("Client disconnected");
+    });
+    
+    socket.emit("ready");
+  });
+  
+  return io;
+};
+
+export const getIO = (): SocketIO => {
+  if (!io) {
+    throw new AppError("Socket IO not initialized");
+  }
+  return io;
+};

@@ -37,7 +37,7 @@ import UpdateTicketService from "../TicketServices/UpdateTicketService";
 import { sayChatbot } from "./ChatBotListener";
 import hourExpedient from "./hourExpedient";
 import { NormalizadorMejorado } from "../../utils/NormalizadorMejorado"; // IMPORTAR EL NUEVO NORMALIZADOR
-const DEBUG_MEDIA = false; // Cambia a false en producción
+const DEBUG_MEDIA = true; // Cambia a false en producción
 
 
 type Session = WASocket & {
@@ -90,8 +90,8 @@ async function obtenerNumeroRealDeMensaje(wbot: Session, message: proto.IWebMess
     };
   }
   
-  console.log('🔍 ANALIZANDO JID:', jid);
-  console.log('   Tipo:', jid.includes('@lid') ? 'LID' : jid.includes('@s.whatsapp.net') ? 'Tradicional' : 'Desconocido');
+  // console.log('🔍 ANALIZANDO JID:', jid);
+  // console.log('   Tipo:', jid.includes('@lid') ? 'LID' : jid.includes('@s.whatsapp.net') ? 'Tradicional' : 'Desconocido');
   
   // DETECCIÓN MEJORADA DE LIDs
   const esLid = jid.includes('@lid') || jid.includes(':') || (jid.includes('.') && !jid.includes('@s.whatsapp.net'));
@@ -126,14 +126,6 @@ async function obtenerNumeroRealDeMensaje(wbot: Session, message: proto.IWebMess
         console.log('   onWhatsApp no devolvió resultados válidos');
         
         // Extraer la parte numérica del LID para placeholder
-        console.log('🔍🔍🔍 DEBUG LID FALLBACK 🔍🔍🔍');
-console.log('JID completo:', jid);
-console.log('Parte antes de @:', jid.split('@')[0]);
-console.log('Solo números:', jid.split('@')[0].replace(/\D/g, ''));
-console.log('lidSinSuffix:', jid.split('@')[0].replace(/\D/g, ''));
-console.log('placeholder:', `LID_${jid.split('@')[0].replace(/\D/g, '').substring(0, 10)}`);
-console.log('🔍🔍🔍 FIN DEBUG 🔍🔍🔍');
-        
         const lidSinSuffix = jid.split('@')[0];
         const placeholder = `LID_${lidSinSuffix.substring(0, 10)}`; // Limitar longitud
         
@@ -318,6 +310,7 @@ const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session): Pro
 const downloadMedia = async (msg: proto.IWebMessageInfo) => {
   let buffer;
   try {
+    // Logger válido para Baileys 6.7.19
     const logger: any = {
       level: 'error',
       debug: () => {},
@@ -426,11 +419,6 @@ const verifyMediaMessage = async (
   ticket: Ticket,
   contact: Contact
 ): Promise<Message> => {
-  console.log('✅ verifyMediaMessage EJECUTÁNDOSE');
-  console.log('   Tipo de mensaje:', getTypeMessage(msg));
-  console.log('   Contact ID:', contact.id);
-  console.log('   Ticket ID:', ticket.id);
-  
   const io = getIO();
   let quotedMsg: Message | null = null;
 
@@ -453,37 +441,13 @@ const verifyMediaMessage = async (
   };
 
   try {
-    console.log('📥 ANTES de downloadMedia');
-    console.log('   messageData.id:', messageData.id);
-    console.log('   Tipo de mensaje:', getTypeMessage(msg));
-    console.log('   filename que se intentará crear:', `${messageData.id}.${getTypeMessage(msg).split("Message")[0]}`);
-
     const mediaPath = join(__dirname, "..", "..", "..", "public");
     const filename = `${messageData.id}.${getTypeMessage(msg).split("Message")[0]}`;
     const path = join(mediaPath, filename);
 
-    const mediaResult = await downloadMedia(msg);
-    console.log('📊 RESULTADO de downloadMedia:');
-    console.log('   ¿Tiene resultado?:', mediaResult ? 'SÍ' : 'NO');
-    
-    if (mediaResult) {
-        console.log('   Mimetype:', mediaResult.mimetype);
-        console.log('   Filename:', mediaResult.filename);
-        console.log('   Tamaño del buffer:', mediaResult.data?.length || 0);
-        
-        // Intentar guardar el archivo manualmente
-        try {
-            await writeFileAsync(path, mediaResult.data);
-            console.log('💾 Archivo guardado en:', path);
-            messageData.mediaUrl = filename;
-        } catch (writeError) {
-            console.error('❌ Error guardando archivo:', writeError);
-        }
-    } else {
-        console.log('❌ downloadMedia devolvió null/undefined');
-    }
+    await downloadMedia(msg);
+    messageData.mediaUrl = filename;
   } catch (err) {
-    console.error('❌ ERROR en downloadMedia:', err);
     Sentry.captureException(err);
     logger.error(err);
   }
@@ -594,19 +558,9 @@ const verifyContact = async (msgContact: IMe, wbot: Session): Promise<Contact> =
 
   let phoneNumber = msgContact.number || msgContact.id.replace(/\D/g, "");
   
-// ========== LOGGING ADICIONAL ==========
-console.log('🔍🔍🔍 VERIFYCONTACT - DEBUG DETALLADO 🔍🔍🔍');
-console.log('msgContact.id:', msgContact.id);
-console.log('msgContact.number:', msgContact.number);
-console.log('msgContact.lid:', msgContact.lid);
-console.log('phoneNumber inicial:', phoneNumber);
-console.log('msgContact.id sin @s.whatsapp.net:', msgContact.id.replace('@s.whatsapp.net', ''));
-console.log('msgContact.id solo números:', msgContact.id.replace(/\D/g, ''));
-// ========== FIN LOGGING ==========
-
-  console.log('👤 VERIFICANDO CONTACTO:');
-  console.log('   ID recibido:', msgContact.id);
-  console.log('   Número en msgContact:', msgContact.number);
+  // console.log('👤 VERIFICANDO CONTACTO:');
+  // console.log('   ID recibido:', msgContact.id);
+  // console.log('   Número en msgContact:', msgContact.number);
   console.log('   Es LID?:', msgContact.esLid ? 'SÍ' : 'NO');
   console.log('   LID original:', msgContact.lid || 'N/A');
   console.log('   JID original:', msgContact.originalJid || 'N/A');
@@ -654,10 +608,10 @@ console.log('msgContact.id solo números:', msgContact.id.replace(/\D/g, ''));
     whatsappId: wbot.id
   };
 
-  console.log('📝 DATOS FINALES DEL CONTACTO:');
-  console.log('   Nombre:', contactData.name);
-  console.log('   Número:', contactData.number);
-  console.log('   LID guardado:', contactData.lid);
+  // console.log('📝 DATOS FINALES DEL CONTACTO:');
+  // console.log('   Nombre:', contactData.name);
+  // console.log('   Número:', contactData.number);
+  // console.log('   LID guardado:', contactData.lid);
   console.log('   Company ID:', contactData.companyId);
 
   const contact = await CreateOrUpdateContactService(contactData);
@@ -740,7 +694,7 @@ const handleMessage = async (
 
     const contact = await verifyContact(msgContact, wbot);
 
-    // ========== DIAGNÓSTICO COMPLETO ==========
+    /** ========== DIAGNÓSTICO COMPLETO ==========
     console.log('\n📊 DIAGNÓSTICO COMPLETO DEL MENSAJE:');
     console.log('======================================');
     console.log('📱 DATOS CRUDOS:');
@@ -762,8 +716,8 @@ const handleMessage = async (
     console.log('   Número en contacto BD:', contact.number);
     console.log('   Contact ID:', contact.id);
     console.log('   Nombre:', contact.name);
-    console.log('   LID guardado:', contact.lid);
-    console.log('======================================\n');
+    // console.log('   LID guardado:', contact.lid);
+    console.log('======================================\n');*/
 
     const ticket = await FindOrCreateTicketService({
       contact,

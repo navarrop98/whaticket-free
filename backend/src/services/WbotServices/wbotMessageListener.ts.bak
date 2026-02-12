@@ -4,7 +4,6 @@ import { writeFile } from "fs";
 import * as Sentry from "@sentry/node";
 
 import {
-  downloadMediaMessage,
   downloadContentFromMessage,
   jidNormalizedUser,
   MediaType,
@@ -37,8 +36,6 @@ import UpdateTicketService from "../TicketServices/UpdateTicketService";
 import { sayChatbot } from "./ChatBotListener";
 import hourExpedient from "./hourExpedient";
 import { NormalizadorMejorado } from "../../utils/NormalizadorMejorado"; // IMPORTAR EL NUEVO NORMALIZADOR
-const DEBUG_MEDIA = false; // Cambia a false en producción
-
 
 type Session = WASocket & {
   id?: number;
@@ -126,14 +123,6 @@ async function obtenerNumeroRealDeMensaje(wbot: Session, message: proto.IWebMess
         console.log('   onWhatsApp no devolvió resultados válidos');
         
         // Extraer la parte numérica del LID para placeholder
-        console.log('🔍🔍🔍 DEBUG LID FALLBACK 🔍🔍🔍');
-console.log('JID completo:', jid);
-console.log('Parte antes de @:', jid.split('@')[0]);
-console.log('Solo números:', jid.split('@')[0].replace(/\D/g, ''));
-console.log('lidSinSuffix:', jid.split('@')[0].replace(/\D/g, ''));
-console.log('placeholder:', `LID_${jid.split('@')[0].replace(/\D/g, '').substring(0, 10)}`);
-console.log('🔍🔍🔍 FIN DEBUG 🔍🔍🔍');
-        
         const lidSinSuffix = jid.split('@')[0];
         const placeholder = `LID_${lidSinSuffix.substring(0, 10)}`; // Limitar longitud
         
@@ -313,98 +302,43 @@ const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session): Pro
 // ========== FIN FUNCIÓN REESCRITA ==========
 
 // ========== FUNCIONES FALTANTES AÑADIDAS ==========
-// ========== FUNCIÓN downloadMedia REESCRITA Y SEGURA ==========
-// ========== FUNCIÓN downloadMedia MEJORADA ==========
-const downloadMedia = async (msg: proto.IWebMessageInfo) => {
-  let buffer;
-  try {
-    const logger: any = {
-      level: 'error',
-      debug: () => {},
-      info: () => {},
-      warn: () => {},
-      error: console.error,
-      trace: () => {},
-      child: () => logger
-    };
-
-    buffer = await downloadMediaMessage(
-      msg,
-      'buffer',
-      {},
-      {
-        logger,
-        reuploadRequest: async (msgToReupload: proto.IWebMessageInfo) => {
-          return msgToReupload;
-        }
-      }
-    );
-  } catch (err: any) {
-    console.error('Erro ao baixar mídia:', err.message || err);
-    return null;
+const downloadMedia = async (
+  msg: proto.IWebMessageInfo,
+  path: string
+): Promise<string> => {
+  const type = getTypeMessage(msg);
+  const messageContent = msg.message?.[type as keyof typeof msg.message];
+  
+  if (!messageContent || typeof messageContent !== "object") {
+    throw new Error("Invalid message content");
   }
 
-  if (!buffer) return null;
+  const stream = await downloadContentFromMessage(
+    messageContent as any,
+    type as MediaType
+  );
 
-  let filename = msg.message?.documentMessage?.fileName || "";
-
-  const mineType =
-    msg.message?.imageMessage ||
-    msg.message?.audioMessage ||
-    msg.message?.videoMessage ||
-    msg.message?.stickerMessage ||
-    msg.message?.documentMessage ||
-    msg.message?.documentWithCaptionMessage?.message?.documentMessage ||
-    msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage ||
-    msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.videoMessage;
-
-  if (!mineType) return null;
-
-  if (!filename) {
-    const ext = mineType.mimetype.split("/")[1].split(";")[0];
-    filename = `${new Date().getTime()}.${ext}`;
-  } else {
-    filename = `${new Date().getTime()}_${filename}`;
+  let buffer = Buffer.from([]);
+  for await (const chunk of stream) {
+    buffer = Buffer.concat([buffer, chunk]);
   }
 
-  return {
-    data: buffer,
-    mimetype: mineType.mimetype,
-    filename
-  };
+  await writeFileAsync(path, buffer);
+  return path;
 };
 
-// ========== FUNCIÓN HKDF SIMPLIFICADA ==========
-function deriveWhatsAppKeys(mediaKey: Buffer): Buffer {
-  const crypto = require('crypto');
+const isValidMsg = (msg: proto.IWebMessageInfo): boolean => {
+  if (msg.key.remoteJid === "status@broadcast") return false;
   
-  // Parámetros para WhatsApp
-  const salt = Buffer.alloc(32); // Salt vacío
-  const info = 'WhatsApp Image Keys'; // Info string
-  const length = 112; // Longitud total requerida
-  
-  // Extraer PRK (Pseudorandom Key)
-  const prk = crypto.createHmac('sha256', salt).update(mediaKey).digest();
-  
-  // Expandir
-  const infoBuffer = Buffer.from(info);
-  const blocks = Math.ceil(length / 32);
-  
-  let t = Buffer.alloc(0);
-  let result = Buffer.alloc(0);
-  
-  for (let i = 0; i < blocks; i++) {
-    const tBuf = Buffer.concat([
-      t,
-      infoBuffer,
-      Buffer.from([i + 1])
-    ]);
-    t = crypto.createHmac('sha256', prk).update(tBuf).digest();
-    result = Buffer.concat([result, t]);
-  }
-  
-  return result.slice(0, length);
-}
+  const msgStubType = msg.messageStubType;
+  const isStubMessage = [
+    WAMessageStubType.REVOKE,
+    WAMessageStubType.E2E_DEVICE_CHANGED,
+  ].includes(msgStubType as number);
+
+  return !isStubMessage;
+};
+
 const verifyQuotedMessage = async (
   msg: proto.IWebMessageInfo
 ): Promise<Message | null> => {
@@ -426,11 +360,6 @@ const verifyMediaMessage = async (
   ticket: Ticket,
   contact: Contact
 ): Promise<Message> => {
-  console.log('✅ verifyMediaMessage EJECUTÁNDOSE');
-  console.log('   Tipo de mensaje:', getTypeMessage(msg));
-  console.log('   Contact ID:', contact.id);
-  console.log('   Ticket ID:', ticket.id);
-  
   const io = getIO();
   let quotedMsg: Message | null = null;
 
@@ -453,37 +382,13 @@ const verifyMediaMessage = async (
   };
 
   try {
-    console.log('📥 ANTES de downloadMedia');
-    console.log('   messageData.id:', messageData.id);
-    console.log('   Tipo de mensaje:', getTypeMessage(msg));
-    console.log('   filename que se intentará crear:', `${messageData.id}.${getTypeMessage(msg).split("Message")[0]}`);
-
     const mediaPath = join(__dirname, "..", "..", "..", "public");
     const filename = `${messageData.id}.${getTypeMessage(msg).split("Message")[0]}`;
     const path = join(mediaPath, filename);
 
-    const mediaResult = await downloadMedia(msg);
-    console.log('📊 RESULTADO de downloadMedia:');
-    console.log('   ¿Tiene resultado?:', mediaResult ? 'SÍ' : 'NO');
-    
-    if (mediaResult) {
-        console.log('   Mimetype:', mediaResult.mimetype);
-        console.log('   Filename:', mediaResult.filename);
-        console.log('   Tamaño del buffer:', mediaResult.data?.length || 0);
-        
-        // Intentar guardar el archivo manualmente
-        try {
-            await writeFileAsync(path, mediaResult.data);
-            console.log('💾 Archivo guardado en:', path);
-            messageData.mediaUrl = filename;
-        } catch (writeError) {
-            console.error('❌ Error guardando archivo:', writeError);
-        }
-    } else {
-        console.log('❌ downloadMedia devolvió null/undefined');
-    }
+    await downloadMedia(msg, path);
+    messageData.mediaUrl = filename;
   } catch (err) {
-    console.error('❌ ERROR en downloadMedia:', err);
     Sentry.captureException(err);
     logger.error(err);
   }
@@ -538,21 +443,6 @@ const verifyMessage = async (
   return newMessage;
 };
 
-// ========== FUNCIÓN isValidMsg ==========
-const isValidMsg = (msg: proto.IWebMessageInfo): boolean => {
-  if (msg.key.remoteJid === "status@broadcast") return false;
-  
-  const msgStubType = msg.messageStubType;
-  const isStubMessage = [
-    WAMessageStubType.REVOKE,
-    WAMessageStubType.E2E_DEVICE_CHANGED,
-  ].includes(msgStubType as number);
-
-  return !isStubMessage;
-};
-
-
-
 const verifyQueue = async (
   wbot: Session,
   msg: proto.IWebMessageInfo,
@@ -594,16 +484,6 @@ const verifyContact = async (msgContact: IMe, wbot: Session): Promise<Contact> =
 
   let phoneNumber = msgContact.number || msgContact.id.replace(/\D/g, "");
   
-// ========== LOGGING ADICIONAL ==========
-console.log('🔍🔍🔍 VERIFYCONTACT - DEBUG DETALLADO 🔍🔍🔍');
-console.log('msgContact.id:', msgContact.id);
-console.log('msgContact.number:', msgContact.number);
-console.log('msgContact.lid:', msgContact.lid);
-console.log('phoneNumber inicial:', phoneNumber);
-console.log('msgContact.id sin @s.whatsapp.net:', msgContact.id.replace('@s.whatsapp.net', ''));
-console.log('msgContact.id solo números:', msgContact.id.replace(/\D/g, ''));
-// ========== FIN LOGGING ==========
-
   console.log('👤 VERIFICANDO CONTACTO:');
   console.log('   ID recibido:', msgContact.id);
   console.log('   Número en msgContact:', msgContact.number);
@@ -869,9 +749,7 @@ export {
   verifyMessage,
   getBodyMessage,
   verifyMediaMessage,
-  isValidMsg,        // ← ¡AGREGADA!
+  isValidMsg,
   verifyQueue,
-  downloadMedia,     // ← ¡AGREGAR TAMBIÉN ESTA!
-  getContactMessage, // ← Y ESTA SI NO ESTÁ
   // Agrega cualquier otra función que se use externamente
 };

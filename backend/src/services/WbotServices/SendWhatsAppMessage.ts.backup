@@ -67,8 +67,8 @@ const SendWhatsAppMessage = async ({
         console.log('   ✅ chatMessages tiene dataJson');
         console.log('   Tipo de dataJson:', typeof chatMessages.dataJson);
         // LOG CRÍTICO: Ver dataJson antes de procesar
-        //console.log('   dataJson crudo (primeros 500 chars):',         
-        console.log('   dataJson crudo:', chatMessages.dataJson);
+        console.log('   dataJson crudo (primeros 500 chars):',         
+
       const msgFound = JSON.parse(JSON.stringify(chatMessages.dataJson));
 
             // LOGS PARA VERIFICAR msgFound
@@ -105,7 +105,7 @@ const SendWhatsAppMessage = async ({
             });
         }
     }   
-    
+    }
   }
   console.log('📤 Opciones finales para wbot.sendMessage:', JSON.stringify(options));
   try {

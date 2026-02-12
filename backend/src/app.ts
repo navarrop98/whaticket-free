@@ -20,8 +20,8 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: [process.env.FRONTEND_URL || "http://localhost:3000", "https://app.sistemasarrecifes.com.ar"],
-  })
+    origin: [process.env.FRONTEND_URL || "http://localhost:3000", "https://app.sistemasarrecifes.com.ar", "https://api.sistemasarrecifes.com.ar"],
+    })
 );
 
 app.use(express.json({

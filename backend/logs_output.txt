@@ -1,0 +1,232 @@
+[TAILING] Tailing last 100 lines for [whaticket-backend] process (change the value with --lines option)
+/home/whaticketapp/.pm2/logs/whaticket-backend-error.log last 100 lines:
+0|whaticke |   requireStack: [
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/queues.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/app.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/server.js'
+0|whaticke |   ]
+0|whaticke | }
+0|whaticke | Error: Cannot find module '@whiskeysockets/baileys'
+0|whaticke | Require stack:
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/queues.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/app.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/server.js
+0|whaticke |     at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1028:15)
+0|whaticke |     at Module.Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+0|whaticke |     at require (node:internal/modules/cjs/helpers:119:18)
+0|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js:30:32)
+0|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+0|whaticke |     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10)
+0|whaticke |     at Module.load (node:internal/modules/cjs/loader:1076:32)
+0|whaticke |     at Function.Module._load (node:internal/modules/cjs/loader:911:12)
+0|whaticke |     at Module.require (node:internal/modules/cjs/loader:1100:19)
+0|whaticke |     at Module.Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:101:39)
+0|whaticke |     at require (node:internal/modules/cjs/helpers:119:18)
+0|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js:3:16)
+0|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+0|whaticke |     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10)
+0|whaticke |     at Module.load (node:internal/modules/cjs/loader:1076:32)
+0|whaticke |     at Function.Module._load (node:internal/modules/cjs/loader:911:12)
+0|whaticke |     at Module.require (node:internal/modules/cjs/loader:1100:19)
+0|whaticke |     at Module.Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:101:39)
+0|whaticke |     at require (node:internal/modules/cjs/helpers:119:18)
+0|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js:9:43)
+0|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+0|whaticke |     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10) {
+0|whaticke |   code: 'MODULE_NOT_FOUND',
+0|whaticke |   requireStack: [
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/queues.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/app.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/server.js'
+0|whaticke |   ]
+0|whaticke | }
+0|whaticke | Error: Cannot find module '@whiskeysockets/baileys'
+0|whaticke | Require stack:
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/queues.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/app.js
+0|whaticke | - /home/whaticketapp/whaticket-free/backend/dist/server.js
+0|whaticke |     at Function.Module._resolveFilename (node:internal/modules/cjs/loader:1028:15)
+0|whaticke |     at Module.Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+0|whaticke |     at require (node:internal/modules/cjs/helpers:119:18)
+0|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js:30:32)
+0|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+0|whaticke |     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10)
+0|whaticke |     at Module.load (node:internal/modules/cjs/loader:1076:32)
+0|whaticke |     at Function.Module._load (node:internal/modules/cjs/loader:911:12)
+0|whaticke |     at Module.require (node:internal/modules/cjs/loader:1100:19)
+0|whaticke |     at Module.Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:101:39)
+0|whaticke |     at require (node:internal/modules/cjs/helpers:119:18)
+0|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js:3:16)
+0|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+0|whaticke |     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10)
+0|whaticke |     at Module.load (node:internal/modules/cjs/loader:1076:32)
+0|whaticke |     at Function.Module._load (node:internal/modules/cjs/loader:911:12)
+0|whaticke |     at Module.require (node:internal/modules/cjs/loader:1100:19)
+0|whaticke |     at Module.Hook._require.Module.require (/usr/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:101:39)
+0|whaticke |     at require (node:internal/modules/cjs/helpers:119:18)
+0|whaticke |     at Object.<anonymous> (/home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js:9:43)
+0|whaticke |     at Module._compile (node:internal/modules/cjs/loader:1198:14)
+0|whaticke |     at Object.Module._extensions..js (node:internal/modules/cjs/loader:1252:10) {
+0|whaticke |   code: 'MODULE_NOT_FOUND',
+0|whaticke |   requireStack: [
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/libs/wbot.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/helpers/GetWhatsappWbot.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/helpers/SendMessage.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/queues.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/app.js',
+0|whaticke |     '/home/whaticketapp/whaticket-free/backend/dist/server.js'
+0|whaticke |   ]
+0|whaticke | }
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+0|whaticke | Closing open session in favor of incoming prekey bundle
+
+/home/whaticketapp/.pm2/logs/whaticket-backend-out.log last 100 lines:
+0|whaticke |     remoteIdentityKey: <Buffer 05 7f 37 83 73 5f 02 7a fa e0 c6 2b 68 42 97 ad b8 c8 74 5e 8b e1 df 46 b2 7c 02 48 64 e2 d2 f8 53>
+0|whaticke |   }
+0|whaticke | }
+0|whaticke | 
+0|whaticke | 📨 ========== NUEVO MENSAJE ==========
+0|whaticke | 🆔 ID: AC6EE9AD92...
+0|whaticke | 📞 RemoteJid: 220903220748330@lid
+0|whaticke | 👤 FromMe: NO
+0|whaticke | 👥 Participant: N/A
+0|whaticke | 📛 PushName: franciscopiazza0
+0|whaticke | ⏰ Timestamp: 5:57:34 PM
+0|whaticke | 🔍 ANALIZANDO JID: 220903220748330@lid
+0|whaticke |    Tipo: LID
+0|whaticke | 
+0|whaticke | 🔍 [GetRealNumberFromLid] INICIANDO BUSQUEDA
+0|whaticke |    Input: "220903220748330@lid"
+0|whaticke |    SessionId: "11"
+0|whaticke |    Clean input: "220903220748330" (15 dígitos)
+0|whaticke |    Tipo: Número normal
+0|whaticke | 
+0|whaticke | 🔍 Buscando mapping exacto: lid-mapping-220903220748330_reverse
+0|whaticke |    ⚠️ No se encontró mapping exacto
+0|whaticke | 
+0|whaticke | 🔍 Buscando coincidencias parciales...
+0|whaticke |    Total mappings: 98
+0|whaticke | 
+0|whaticke | 🔍 Buscando LID para número: 220903220748330
+0|whaticke |    ℹ️ No se encontró LID para número 220903220748330
+0|whaticke | 
+0|whaticke | ⚠️ No se encontró mapping para: 220903220748330
+0|whaticke |    Devolviendo input original
+0|whaticke | ✅ DETECTADO LID CON @lid, intentando onWhatsApp: 220903220748330@lid
+0|whaticke | ⚠️  LID NO PUDO CONVERTIRSE CON onWhatsApp: 220903220748330@lid
+0|whaticke | 🔄 Usando NormalizadorMejorado como fallback para LID
+0|whaticke | 🔍 obtenerNumeroReal - JID recibido: 220903220748330@lid
+0|whaticke | 🔍 Detectado como LID: 220903220748330@lid
+0|whaticke | 🔧 Número extraído de JID: 220903220748330@lid -> 220903220748330
+0|whaticke | ⚠️  LID largo detectado, posiblemente incorrecto
+0|whaticke | ✅ RESULTADO (NormalizadorMejorado para LID):
+0|whaticke |    LID original: 220903220748330@lid
+0|whaticke |    Número obtenido: LID_2209032207
+0|whaticke | [17:58:39.565] INFO: Socket pedro Connection Update  
+0|whaticke | [17:58:39.565] INFO: Socket pedro Connection Update open 
+0|whaticke | [17:58:39.658] INFO: Socket pedro Connection Update  
+0|whaticke | [17:58:42.472] INFO: Iniciando processamento de filas
+0|whaticke | [17:59:07.484] INFO: Total de conexao Prontas para envio!: 2
+0|whaticke | [17:59:07.488] INFO: Configuração de envio não encontrada da conexão
+0|whaticke | [17:59:07.489] INFO: Configuração de envio não encontrada da conexão
+0|whaticke | 👤 VERIFICANDO CONTACTO:
+0|whaticke |    ID recibido: LID_2209032207@s.whatsapp.net
+0|whaticke |    Número en msgContact: LID_2209032207
+0|whaticke |    Es LID?: SÍ
+0|whaticke |    LID original: 220903220748330@lid
+0|whaticke |    JID original: 220903220748330@lid
+0|whaticke | 🔍 Contacto tiene LID, verificando número real: 220903220748330@lid
+0|whaticke | 
+0|whaticke | 🔍 [GetRealNumberFromLid] INICIANDO BUSQUEDA
+0|whaticke |    Input: "220903220748330@lid"
+0|whaticke |    SessionId: "11"
+0|whaticke |    Clean input: "220903220748330" (15 dígitos)
+0|whaticke |    Tipo: Número normal
+0|whaticke | 
+0|whaticke | 🔍 Buscando mapping exacto: lid-mapping-220903220748330_reverse
+0|whaticke |    ⚠️ No se encontró mapping exacto
+0|whaticke | 
+0|whaticke | 🔍 Buscando coincidencias parciales...
+0|whaticke |    Total mappings: 98
+0|whaticke | 
+0|whaticke | 🔍 Buscando LID para número: 220903220748330
+0|whaticke |    ℹ️ No se encontró LID para número 220903220748330
+0|whaticke | 
+0|whaticke | ⚠️ No se encontró mapping para: 220903220748330
+0|whaticke |    Devolviendo input original
+0|whaticke | ✅ [BAILEYS_SESSIONS] LID convertido a número en verifyContact: 220903220748330
+0|whaticke | 📝 DATOS FINALES DEL CONTACTO:
+0|whaticke |    Nombre: franciscopiazza0
+0|whaticke |    Número: 220903220748330
+0|whaticke |    LID guardado: 220903220748330@lid
+0|whaticke |    Company ID: 1
+0|whaticke | 
+0|whaticke | 📊 DIAGNÓSTICO COMPLETO DEL MENSAJE:
+0|whaticke | ======================================
+0|whaticke | 📱 DATOS CRUDOS:
+0|whaticke |    RemoteJid: 220903220748330@lid
+0|whaticke |    Participant: undefined
+0|whaticke |    FromMe: false
+0|whaticke |    PushName: franciscopiazza0
+0|whaticke |    Tipo de mensaje: conversation
+0|whaticke | 
+0|whaticke | 🔍 ANÁLISIS LID:
+0|whaticke |    JID analizado: 220903220748330@lid
+0|whaticke | 
+0|whaticke | 👤 DATOS DEL CONTACTO:
+0|whaticke |    Número en contacto BD: 220903220748330
+0|whaticke |    Contact ID: 494
+0|whaticke |    Nombre: franciscopiazza0
+0|whaticke |    LID guardado: 220903220748330@lid
+0|whaticke | ======================================
+0|whaticke | 
+0|whaticke | [17:59:39.478] INFO: Ticket 162 messages read
+
+0|whaticket-backend  | 📨 ========== NUEVO MENSAJE ==========
+0|whaticket-backend  | 🆔 ID: 3EB0A8BA16...
+0|whaticket-backend  | 📞 RemoteJid: 5492478409220@s.whatsapp.net
+0|whaticket-backend  | 👤 FromMe: NO
+0|whaticket-backend  | 👥 Participant: N/A
+0|whaticket-backend  | 📛 PushName: Pedro Navarro
+0|whaticket-backend  | ⏰ Timestamp: 6:04:05 PM
+0|whaticket-backend  | 🔍 ANALIZANDO JID: 5492478409220@s.whatsapp.net
+0|whaticket-backend  |    Tipo: Tradicional
+0|whaticket-backend  | 🔍 [GetRealNumberFromLid] INICIANDO BUSQUEDA
+0|whaticket-backend  |    Input: "5492478409220@s.whatsapp.net"
+0|whaticket-backend  |    SessionId: "12"
+0|whaticket-backend  |    Clean input: "5492478409220" (13 dígitos)
+0|whaticket-backend  |    Tipo: Número normal
+0|whaticket-backend  | 🔍 Buscando mapping exacto: lid-mapping-5492478409220_reverse
+0|whaticket-backend  |    ⚠️ No se encontró mapping exacto
+0|whaticket-backend  | 🔍 Buscando coincidencias parciales...
+0|whaticket-backend  |    Total mappings: 98
+0|whaticket-backend  | 🔍 Buscando LID para número: 5492478409220
+0|whaticket-backend  | ✅ Número tiene LID asociado
+0|whaticket-backend  |    LID: "28308196585718"
+0|whaticket-backend  | 🔍 obtenerNumeroReal - JID recibido: 5492478409220@s.whatsapp.net
+0|whaticket-backend  | ✅ Número tradicional extraído: 5492478409220
+0|whaticket-backend  | ✅ RESULTADO (no LID @lid):
+0|whaticket-backend  |    JID original: 5492478409220@s.whatsapp.net
+0|whaticket-backend  |    Número obtenido: 5492478409220
+0|whaticket-backend  |    Es LID?: NO

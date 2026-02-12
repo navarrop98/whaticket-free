@@ -9,49 +9,60 @@ import {
   AllowNull,
   ForeignKey,
   BelongsTo,
-  HasMany
+  HasMany,
+  DataType,
+  Default
 } from "sequelize-typescript";
 import Queue from "./Queue";
 
-@Table
-class Chatbot extends Model<Chatbot> {
+@Table({
+  tableName: "Chatbots",
+  timestamps: true
+})
+class Chatbot extends Model {
   @PrimaryKey
   @AutoIncrement
-  @Column
-  id: number;
+  @Column(DataType.INTEGER)
+  id!: number;
 
   @AllowNull(false)
-  @Column
-  name: string;
+  @Column(DataType.STRING)
+  name!: string;
 
-  @Column
-  greetingMessage: string;
+  @Column(DataType.TEXT)
+  greetingMessage!: string;
+
+  @Column(DataType.JSONB)
+  options!: any;
+
+  @Default(false)
+  @Column(DataType.BOOLEAN)
+  isAgent!: boolean;
 
   @ForeignKey(() => Queue)
-  @Column
-  queueId: number;
+  @Column(DataType.INTEGER)
+  queueId!: number;
 
   @BelongsTo(() => Queue)
-  queue: Queue;
+  queue!: Queue;
 
   @ForeignKey(() => Chatbot)
-  @Column
-  chatbotId: number;
-
-  @Column
-  isAgent: boolean;
+  @Column(DataType.INTEGER)
+  chatbotId!: number;
 
   @BelongsTo(() => Chatbot)
-  mainChatbot: Chatbot;
+  parentChatbot!: Chatbot;
 
   @HasMany(() => Chatbot)
-  options: Chatbot[];
+  childrenChatbots!: Chatbot[];
 
   @CreatedAt
-  createdAt: Date;
+  @Column(DataType.DATE)
+  createdAt!: Date;
 
   @UpdatedAt
-  updatedAt: Date;
+  @Column(DataType.DATE)
+  updatedAt!: Date;
 }
 
 export default Chatbot;

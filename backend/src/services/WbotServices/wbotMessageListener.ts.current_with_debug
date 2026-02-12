@@ -4,7 +4,6 @@ import { writeFile } from "fs";
 import * as Sentry from "@sentry/node";
 
 import {
-  downloadMediaMessage,
   downloadContentFromMessage,
   jidNormalizedUser,
   MediaType,
@@ -37,7 +36,7 @@ import UpdateTicketService from "../TicketServices/UpdateTicketService";
 import { sayChatbot } from "./ChatBotListener";
 import hourExpedient from "./hourExpedient";
 import { NormalizadorMejorado } from "../../utils/NormalizadorMejorado"; // IMPORTAR EL NUEVO NORMALIZADOR
-const DEBUG_MEDIA = false; // Cambia a false en producción
+const DEBUG_MEDIA = true; // Cambia a false en producción
 
 
 type Session = WASocket & {
@@ -126,14 +125,6 @@ async function obtenerNumeroRealDeMensaje(wbot: Session, message: proto.IWebMess
         console.log('   onWhatsApp no devolvió resultados válidos');
         
         // Extraer la parte numérica del LID para placeholder
-        console.log('🔍🔍🔍 DEBUG LID FALLBACK 🔍🔍🔍');
-console.log('JID completo:', jid);
-console.log('Parte antes de @:', jid.split('@')[0]);
-console.log('Solo números:', jid.split('@')[0].replace(/\D/g, ''));
-console.log('lidSinSuffix:', jid.split('@')[0].replace(/\D/g, ''));
-console.log('placeholder:', `LID_${jid.split('@')[0].replace(/\D/g, '').substring(0, 10)}`);
-console.log('🔍🔍🔍 FIN DEBUG 🔍🔍🔍');
-        
         const lidSinSuffix = jid.split('@')[0];
         const placeholder = `LID_${lidSinSuffix.substring(0, 10)}`; // Limitar longitud
         
@@ -315,63 +306,179 @@ const getContactMessage = async (msg: proto.IWebMessageInfo, wbot: Session): Pro
 // ========== FUNCIONES FALTANTES AÑADIDAS ==========
 // ========== FUNCIÓN downloadMedia REESCRITA Y SEGURA ==========
 // ========== FUNCIÓN downloadMedia MEJORADA ==========
-const downloadMedia = async (msg: proto.IWebMessageInfo) => {
-  let buffer;
+const downloadMedia = async (
+  msg: proto.IWebMessageInfo,
+  path: string
+): Promise<string> => {
+  console.log('[MEDIA-DEBUG] === INICIANDO DEBUG COMPLETO ===');
+  console.log('[MEDIA-DEBUG] Mensaje ID:', msg.key.id);
+  
   try {
-    const logger: any = {
-      level: 'error',
-      debug: () => {},
-      info: () => {},
-      warn: () => {},
-      error: console.error,
-      trace: () => {},
-      child: () => logger
-    };
+    const type = getTypeMessage(msg);
+    const messageContent = msg.message?.[type as keyof typeof msg.message];
 
-    buffer = await downloadMediaMessage(
-      msg,
-      'buffer',
-      {},
-      {
-        logger,
-        reuploadRequest: async (msgToReupload: proto.IWebMessageInfo) => {
-          return msgToReupload;
-        }
-      }
-    );
-  } catch (err: any) {
-    console.error('Erro ao baixar mídia:', err.message || err);
-    return null;
-  }
+    console.log('[MEDIA-DEBUG] Tipo de mensaje:', type);
+    
+    if (!messageContent || typeof messageContent !== "object") {
+      console.log('[MEDIA-DEBUG] ❌ Contenido inválido');
+      throw new Error("Invalid message content");
+    }
 
-  if (!buffer) return null;
-
-  let filename = msg.message?.documentMessage?.fileName || "";
-
-  const mineType =
-    msg.message?.imageMessage ||
-    msg.message?.audioMessage ||
-    msg.message?.videoMessage ||
-    msg.message?.stickerMessage ||
-    msg.message?.documentMessage ||
-    msg.message?.documentWithCaptionMessage?.message?.documentMessage ||
-    msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage ||
-    msg.message?.extendedTextMessage?.contextInfo?.quotedMessage?.videoMessage;
-
-  if (!mineType) return null;
-
-  if (!filename) {
-    const ext = mineType.mimetype.split("/")[1].split(";")[0];
-    filename = `${new Date().getTime()}.${ext}`;
+    // ==================== DEBUG ESTRUCTURAL COMPLETO ====================
+    console.log('[MEDIA-DEBUG] === ESTRUCTURA COMPLETA DEL MENSAJE ===');
+    
+    // 1. Verificar si es imageMessage
+    if (msg.message?.imageMessage) {
+      const imgMsg = msg.message.imageMessage;
+      console.log('[MEDIA-DEBUG] ✅ imageMessage encontrado en msg.message');
+      console.log('[MEDIA-DEBUG] Propiedades de imageMessage:', Object.keys(imgMsg));
+      
+      // 2. Buscar mediaKey específicamente
+if (imgMsg.mediaKey) {
+  console.log('[MEDIA-DEBUG] 🎯 ¡MEDIAKEY ENCONTRADO EN imageMessage!');
+  const mediaKey = imgMsg.mediaKey;
+  
+  console.log('[MEDIA-DEBUG] Tipo de mediaKey:', typeof mediaKey);
+  
+  if (Buffer.isBuffer(mediaKey)) {
+    console.log('[MEDIA-DEBUG] MediaKey como Buffer:');
+    console.log('[MEDIA-DEBUG]   Hex:', mediaKey.toString('hex'));
+    console.log('[MEDIA-DEBUG]   Base64:', mediaKey.toString('base64'));
+    console.log('[MEDIA-DEBUG]   Longitud:', mediaKey.length, 'bytes');
+    
+    // Guardar para referencia
+    await writeFileAsync('/tmp/mediakey.bin', mediaKey);
+    console.log('[MEDIA-DEBUG] MediaKey guardado en /tmp/mediakey.bin');
+  } else if (mediaKey instanceof Uint8Array) {
+    const buffer = Buffer.from(mediaKey);
+    console.log('[MEDIA-DEBUG] MediaKey como Uint8Array:');
+    console.log('[MEDIA-DEBUG]   Hex:', buffer.toString('hex'));
+    console.log('[MEDIA-DEBUG]   Base64:', buffer.toString('base64'));
+    console.log('[MEDIA-DEBUG]   Longitud:', buffer.length, 'bytes');
+} else if (typeof mediaKey === 'string') {
+  const mediaKeyStr = mediaKey as string;
+  console.log('[MEDIA-DEBUG] MediaKey como string:', mediaKeyStr.substring(0, 50) + '...');
+  console.log('[MEDIA-DEBUG] Longitud string:', mediaKeyStr.length, 'caracteres');
+    
+    // Intentar decodificar como base64
+    try {
+      const buffer = Buffer.from(mediaKey, 'base64');
+      console.log('[MEDIA-DEBUG] Decodificado como base64:');
+      console.log('[MEDIA-DEBUG]   Hex:', buffer.toString('hex'));
+      console.log('[MEDIA-DEBUG]   Longitud:', buffer.length, 'bytes');
+    } catch (e) {
+      console.log('[MEDIA-DEBUG] No es base64 válido');
+    }
   } else {
-    filename = `${new Date().getTime()}_${filename}`;
+    console.log('[MEDIA-DEBUG] Tipo desconocido:', mediaKey);
   }
-
-  return {
-    data: buffer,
-    mimetype: mineType.mimetype,
-    filename
-  };
+}
+      
+      // 3. Mostrar otras propiedades importantes
+      console.log('[MEDIA-DEBUG] === OTRAS PROPIEDADES IMPORTANTES ===');
+      const importantProps = {
+        url: imgMsg.url,
+        directPath: imgMsg.directPath,
+        mimetype: imgMsg.mimetype,
+        fileSha256: imgMsg.fileSha256,
+        fileEncSha256: imgMsg.fileEncSha256,
+        mediaKeyTimestamp: imgMsg.mediaKeyTimestamp,
+        jpegThumbnail: imgMsg.jpegThumbnail ? 'PRESENTE' : 'AUSENTE'
+      };
+      
+      Object.entries(importantProps).forEach(([key, value]) => {
+        if (value) {
+          if (Buffer.isBuffer(value) || value instanceof Uint8Array) {
+            const buf = Buffer.isBuffer(value) ? value : Buffer.from(value);
+            console.log(`[MEDIA-DEBUG] ${key}:`, buf.toString('hex').substring(0, 32) + '...');
+          } else {
+            console.log(`[MEDIA-DEBUG] ${key}:`, value);
+          }
+        } else {
+          console.log(`[MEDIA-DEBUG] ${key}: AUSENTE`);
+        }
+      });
+    } else {
+      console.log('[MEDIA-DEBUG] ❌ No es imageMessage');
+      console.log('[MEDIA-DEBUG] Tipos en msg.message:', Object.keys(msg.message || {}));
+    }
+    
+    // 4. También verificar messageContent (el enfoque original)
+    console.log('[MEDIA-DEBUG] === messageContent (enfoque original) ===');
+    console.log('[MEDIA-DEBUG] Tipo de messageContent:', typeof messageContent);
+    console.log('[MEDIA-DEBUG] Keys en messageContent:', Object.keys(messageContent));
+    
+    // ==================== DESCARGA DIRECTA ====================
+    console.log('[MEDIA-DEBUG] === DESCARGA DIRECTA ===');
+    
+    // Usar URL directa si existe
+    const mediaMessage = messageContent as any;
+    const url = mediaMessage.url;
+    
+    if (url) {
+      console.log('[MEDIA-DEBUG] Descargando desde URL...');
+      console.log('[MEDIA-DEBUG] URL:', url.substring(0, 80) + '...');
+      
+      const https = require('https');
+      
+      const buffer = await new Promise<Buffer>((resolve, reject) => {
+        https.get(url, (response) => {
+          const chunks: Buffer[] = [];
+          response.on('data', (chunk) => chunks.push(chunk));
+          response.on('end', () => resolve(Buffer.concat(chunks)));
+          response.on('error', reject);
+        }).on('error', reject);
+      });
+      
+      console.log('[MEDIA-DEBUG] ✅ Descarga completada:', buffer.length, 'bytes');
+      
+      // Guardar archivo
+      await writeFileAsync(path, buffer);
+      console.log('[MEDIA-DEBUG] Archivo guardado en:', path);
+      
+      // Verificar primeros bytes
+      const firstBytes = buffer.slice(0, 8).toString('hex');
+      console.log('[MEDIA-DEBUG] Primeros 8 bytes:', firstBytes);
+      
+      if (firstBytes.startsWith('ffd8')) {
+        console.log('[MEDIA-DEBUG] ✅ ¡Es JPEG!');
+      } else if (firstBytes.startsWith('8950')) {
+        console.log('[MEDIA-DEBUG] ✅ ¡Es PNG!');
+      } else {
+        console.log('[MEDIA-DEBUG] ❌ No es imagen conocida (probablemente cifrado)');
+      }
+    } else {
+      console.log('[MEDIA-DEBUG] ❌ No hay URL, usando método tradicional');
+      
+      const stream = await downloadContentFromMessage(
+        messageContent as any,
+        type as MediaType
+      );
+      
+      let buffer = Buffer.from([]);
+      for await (const chunk of stream) {
+        buffer = Buffer.concat([buffer, chunk]);
+      }
+      
+      console.log('[MEDIA-DEBUG] Stream recibido:', buffer.length, 'bytes');
+      await writeFileAsync(path, buffer);
+    }
+    
+    return path;
+    
+  } catch (error) {
+    console.error('[MEDIA-DEBUG] ❌ ERROR CRÍTICO:', error.message);
+    console.error(error.stack);
+    
+    // Guardar error
+    try {
+      await writeFileAsync(path, Buffer.from(`ERROR: ${error.message}`));
+    } catch (e) {
+      // Ignorar
+    }
+    
+    return path;
+  }
 };
 
 // ========== FUNCIÓN HKDF SIMPLIFICADA ==========
@@ -426,11 +533,6 @@ const verifyMediaMessage = async (
   ticket: Ticket,
   contact: Contact
 ): Promise<Message> => {
-  console.log('✅ verifyMediaMessage EJECUTÁNDOSE');
-  console.log('   Tipo de mensaje:', getTypeMessage(msg));
-  console.log('   Contact ID:', contact.id);
-  console.log('   Ticket ID:', ticket.id);
-  
   const io = getIO();
   let quotedMsg: Message | null = null;
 
@@ -453,37 +555,13 @@ const verifyMediaMessage = async (
   };
 
   try {
-    console.log('📥 ANTES de downloadMedia');
-    console.log('   messageData.id:', messageData.id);
-    console.log('   Tipo de mensaje:', getTypeMessage(msg));
-    console.log('   filename que se intentará crear:', `${messageData.id}.${getTypeMessage(msg).split("Message")[0]}`);
-
     const mediaPath = join(__dirname, "..", "..", "..", "public");
     const filename = `${messageData.id}.${getTypeMessage(msg).split("Message")[0]}`;
     const path = join(mediaPath, filename);
 
-    const mediaResult = await downloadMedia(msg);
-    console.log('📊 RESULTADO de downloadMedia:');
-    console.log('   ¿Tiene resultado?:', mediaResult ? 'SÍ' : 'NO');
-    
-    if (mediaResult) {
-        console.log('   Mimetype:', mediaResult.mimetype);
-        console.log('   Filename:', mediaResult.filename);
-        console.log('   Tamaño del buffer:', mediaResult.data?.length || 0);
-        
-        // Intentar guardar el archivo manualmente
-        try {
-            await writeFileAsync(path, mediaResult.data);
-            console.log('💾 Archivo guardado en:', path);
-            messageData.mediaUrl = filename;
-        } catch (writeError) {
-            console.error('❌ Error guardando archivo:', writeError);
-        }
-    } else {
-        console.log('❌ downloadMedia devolvió null/undefined');
-    }
+    await downloadMedia(msg, path);
+    messageData.mediaUrl = filename;
   } catch (err) {
-    console.error('❌ ERROR en downloadMedia:', err);
     Sentry.captureException(err);
     logger.error(err);
   }
@@ -594,16 +672,6 @@ const verifyContact = async (msgContact: IMe, wbot: Session): Promise<Contact> =
 
   let phoneNumber = msgContact.number || msgContact.id.replace(/\D/g, "");
   
-// ========== LOGGING ADICIONAL ==========
-console.log('🔍🔍🔍 VERIFYCONTACT - DEBUG DETALLADO 🔍🔍🔍');
-console.log('msgContact.id:', msgContact.id);
-console.log('msgContact.number:', msgContact.number);
-console.log('msgContact.lid:', msgContact.lid);
-console.log('phoneNumber inicial:', phoneNumber);
-console.log('msgContact.id sin @s.whatsapp.net:', msgContact.id.replace('@s.whatsapp.net', ''));
-console.log('msgContact.id solo números:', msgContact.id.replace(/\D/g, ''));
-// ========== FIN LOGGING ==========
-
   console.log('👤 VERIFICANDO CONTACTO:');
   console.log('   ID recibido:', msgContact.id);
   console.log('   Número en msgContact:', msgContact.number);

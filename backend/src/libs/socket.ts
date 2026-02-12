@@ -11,65 +11,128 @@ import Ticket from "../models/Ticket";
 let io: SocketIO;
 
 export const initIO = (httpServer: Server): SocketIO => {
+  logger.info("=== INITIO CALLED - WITH MIDDLEWARE ===");
+  
   io = new SocketIO(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL
+      origin: [process.env.FRONTEND_URL, "https://api.sistemasarrecifes.com.ar"],
+      credentials: true
+    },
+    allowEIO3: true,
+    transports: ["polling", "websocket"],
+    pingTimeout: 60000,
+    pingInterval: 25000
+  });
+
+  // ========== MIDDLEWARE (se ejecuta en CADA conexión) ==========
+  io.use(async (socket, next) => {
+    console.log("🟢🟢🟢 SOCKET.IO MIDDLEWARE EXECUTED!");
+    logger.info("=== MIDDLEWARE EXECUTED ===");
+    logger.info("Socket ID:", socket.id);
+    logger.info("Handshake query:", socket.handshake.query);
+    
+    // Obtener token
+    const tokenParam = socket.handshake.query?.token;
+    logger.info("Token param:", tokenParam);
+    
+    if (!tokenParam) {
+      logger.error("No token in middleware");
+      return next(new Error("Authentication error"));
+    }
+    
+    // Convertir a string
+    let tokenString: string = "";
+    if (Array.isArray(tokenParam)) {
+      tokenString = tokenParam[0];
+    } else if (typeof tokenParam === 'string') {
+      tokenString = tokenParam;
+    }
+    
+    // Quitar comillas si viene como JSON string
+    if (tokenString.startsWith('"') && tokenString.endsWith('"')) {
+      try {
+        tokenString = JSON.parse(tokenString);
+      } catch (e) {
+        // Ignorar
+      }
+    }
+    
+    try {
+      const tokenData = verify(tokenString, authConfig.secret);
+      
+      // Extraer user ID
+      let userId: string = "";
+      if (typeof tokenData === 'string') {
+        try {
+          const parsed = JSON.parse(tokenData);
+          userId = parsed.id;
+        } catch {
+          return next(new Error("Invalid token format"));
+        }
+      } else {
+        userId = (tokenData as any).id;
+      }
+      
+      if (!userId) {
+        return next(new Error("No user ID in token"));
+      }
+      
+      // Adjuntar user ID al socket para uso posterior
+      (socket as any).userId = userId;
+      logger.info("Middleware SUCCESS - User ID:", userId);
+      
+      return next();
+      
+    } catch (error) {
+      logger.error("Middleware authentication FAILED:", error);
+      return next(new Error("Authentication error"));
     }
   });
 
+  // ========== EVENT LISTENER (debería ejecutarse después del middleware) ==========
   io.on("connection", async socket => {
-    const { token } = socket.handshake.query;
-    let tokenData = null;
-    try {
-      tokenData = verify(token, authConfig.secret);
-      logger.debug(tokenData, "io-onConnection: tokenData");
-    } catch (error) {
-      logger.error(error, "Error decoding token");
+    console.log("🟢🟢🟢 CONNECTION EVENT FINALLY FIRED!");
+    logger.info("=== CONNECTION EVENT ===");
+    logger.info("Socket ID:", socket.id);
+    logger.info("Attached user ID:", (socket as any).userId);
+    
+    const userId = (socket as any).userId;
+    if (!userId) {
+      logger.error("No user ID attached to socket");
       socket.disconnect();
-      return io;
+      return;
     }
-
-    const userId = tokenData.id;
-
-    let user: User = null;
-    if (userId && userId !== "undefined" && userId !== "null") {
-      user = await User.findByPk(userId, { include: [Queue] });
+    
+    const user = await User.findByPk(userId, { include: [Queue] });
+    if (!user) {
+      logger.error("User not found:", userId);
+      socket.disconnect();
+      return;
     }
-
-    logger.info("Client Connected");
+    
+    logger.info("Client Connected - User:", user.name);
+    
+    // ... (mantén el resto del código original: joinChatBox, joinNotification, etc.)
     socket.on("joinChatBox", (ticketId: string) => {
-      if (ticketId === "undefined") {
-        return;
-      }
+      if (ticketId === "undefined") return;
       Ticket.findByPk(ticketId).then(
         ticket => {
-          // only admin and the current user of the ticket
-          // can join the message channel of it.
-          if (
-            ticket &&
-            (ticket?.userId === user.id || user.profile === "admin")
-          ) {
+          if (ticket && (ticket?.userId === user.id || user.profile === "admin")) {
             logger.debug(`User ${user.id} joined ticket ${ticketId} channel`);
             socket.join(ticketId);
           } else {
-            logger.info(
-              `Invalid attempt to join chanel of ticket ${ticketId} by user ${user.id}`
-            );
+            logger.info(`Invalid attempt to join ticket ${ticketId} by user ${user.id}`);
           }
         },
-        error => {
-          logger.error(error, `Error fetching ticket ${ticketId}`);
-        }
+        error => logger.error(error, `Error fetching ticket ${ticketId}`)
       );
     });
 
     socket.on("joinNotification", () => {
       if (user.profile === "admin") {
-        // admin can join all notifications
-        logger.debug(`Admin ${user.id} joined the notification channel.`);
+        logger.debug(`Admin ${user.id} joined notification channel.`);
         socket.join("notification");
       } else {
-        // normal users join notifications of the queues they participate
         user.queues.forEach(queue => {
           logger.debug(`User ${user.id} joined queue ${queue.id} channel.`);
           socket.join(`queue-${queue.id}-notification`);
@@ -79,26 +142,23 @@ export const initIO = (httpServer: Server): SocketIO => {
 
     socket.on("joinTickets", (status: string) => {
       if (user.profile === "admin") {
-        // only admin can join the notifications of a particular status
         logger.debug(`Admin ${user.id} joined ${status} tickets channel.`);
         socket.join(`${status}`);
       } else {
-        // normal users can only receive messages of the queues they participate
         user.queues.forEach(queue => {
-          logger.debug(
-            `User ${user.id} joined queue ${queue.id} ${status} tickets channel.`
-          );
+          logger.debug(`User ${user.id} joined queue ${queue.id} ${status} tickets channel.`);
           socket.join(`queue-${queue.id}-${status}`);
         });
       }
     });
 
     socket.on("disconnect", () => {
-      logger.info("Client disconnected");
+      logger.info("Client disconnected:", socket.id);
     });
     
     socket.emit("ready");
   });
+  
   return io;
 };
 

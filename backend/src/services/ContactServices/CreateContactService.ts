@@ -1,7 +1,7 @@
 import AppError from "../../errors/AppError";
 import Contact from "../../models/Contact";
 
-interface ExtraInfo {
+interface Extrainfo {
   name: string;
   value: string;
 }
@@ -11,14 +11,14 @@ interface Request {
   number: string;
   email?: string;
   profilePicUrl?: string;
-  extraInfo?: ExtraInfo[];
+  extrainfo?: any[];
 }
 
 const CreateContactService = async ({
   name,
   number,
   email = "",
-  extraInfo = []
+  extrainfo = []
 }: Request): Promise<Contact> => {
   const numberExists = await Contact.findOne({
     where: { number }
@@ -33,10 +33,10 @@ const CreateContactService = async ({
       name,
       number,
       email,
-      extraInfo
+      extrainfo
     },
     {
-      include: ["extraInfo"]
+      
     }
   );
 
