@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,7 +9,7 @@
     "watch": "tsc -w",
     "db:migrate": "npx sequelize db:migrate",
     "db:seed": "sequelize db:seed:all",
-    "start": "nodemon dist/server.js",
+    "start": "node dist/server.js",
     "dev:server": "ts-node-dev --respawn --transpile-only --ignore node_modules src/server.ts",
     "pretest": "NODE_ENV=test sequelize db:migrate && NODE_ENV=test sequelize db:seed:all",
     "test": "NODE_ENV=test jest",
@@ -25,7 +26,7 @@
     "@thream/socketio-jwt": "^3.0.0",
     "@types/lodash": "^4.14.182",
     "@types/pino": "^6.3.4",
-    "@whiskeysockets/baileys": "^6.7.19",
+    "@whiskeysockets/baileys": "6.6.0",
     "axios": "^0.26.1",
     "bcryptjs": "^2.4.3",
     "bull": "^4.8.2",
@@ -93,7 +94,7 @@
     "prettier": "^2.1.2",
     "supertest": "^5.0.0",
     "ts-jest": "^26.4.1",
-    "ts-node": "^10.9.2",
+    "ts-node": "^10.9.1",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.6.3"
   }
